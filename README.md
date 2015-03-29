@@ -55,7 +55,8 @@ Simply wrap your views in `ru.noties.scrollable.ScrollableLayout`. The final xml
 
 ```
 
-The most imprortant things here are
+The most imprortant things here are:
+
 1. `app:scrollable_maxScroll="@dimen/header_height"` - it's the value of header height aka the max scroll distance for a ScrollableLayout
 2. It's what will be a header
 3. It you wish to create *sticky* behavior to a certain View, you should indicate it's heigth here & in step **5**
