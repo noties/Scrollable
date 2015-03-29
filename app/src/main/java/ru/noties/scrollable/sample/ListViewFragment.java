@@ -5,7 +5,9 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 /**
  * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 29.03.2015.
@@ -33,6 +35,12 @@ public class ListViewFragment extends BaseFragment {
         mListView = findView(view, R.id.list_view);
         final BaseListAdapter adapter = new BaseListAdapter(getActivity(), 100);
         mListView.setAdapter(adapter);
+        mListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getActivity(), "Click: " + position, Toast.LENGTH_SHORT).show();
+            }
+        });
 
         return view;
     }

@@ -100,11 +100,15 @@ import android.widget.Scroller;
 public class ScrollableLayout extends FrameLayout {
 
     private Scroller mScroller;
-    private GestureDetector mDetector;
+    private GestureDetector mScrollDetector;
+    private GestureDetector mFlingDetector;
+
     private CanScrollVerticallyDelegate mCanScrollVerticallyDelegate;
     private OnScrollChangedListener mOnScrollChangedListener;
 
     private int mMaxScrollY;
+
+    private boolean mIsScrolling;
 
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
@@ -144,7 +148,9 @@ public class ScrollableLayout extends FrameLayout {
         }
 
         setVerticalScrollBarEnabled(true);
-        mDetector = new GestureDetector(context, new ScrollableGestureListener());
+
+        mScrollDetector = new GestureDetector(context, new ScrollGestureListener());
+        mFlingDetector  = new GestureDetector(context, new FlingGestureListener());
     }
 
     /**
@@ -222,10 +228,20 @@ public class ScrollableLayout extends FrameLayout {
     @Override
     public void scrollTo(int x, int y) {
 
+        final int newY = getNewY(y);
+        if (newY < 0) {
+            return;
+        }
+
+        super.scrollTo(0, newY);
+    }
+
+    protected int getNewY(int y) {
+
         final int currentY = getScrollY();
 
         if (currentY == y) {
-            return;
+            return -1;
         }
 
         final int direction = y - currentY;
@@ -238,14 +254,14 @@ public class ScrollableLayout extends FrameLayout {
                 // if not dragging draggable then return, else do not return
                 if (!mIsDraggingDraggable
                         && mCanScrollVerticallyDelegate.canScrollVertically(direction)) {
-                    return;
+                    return -1;
                 }
             } else {
 
                 // else check if we are at max scroll
                 if (currentY == mMaxScrollY
                         && !mCanScrollVerticallyDelegate.canScrollVertically(direction)) {
-                    return;
+                    return -1;
                 }
             }
         }
@@ -256,7 +272,7 @@ public class ScrollableLayout extends FrameLayout {
             y = mMaxScrollY;
         }
 
-        super.scrollTo(x, y);
+        return y;
     }
 
     /**
@@ -287,7 +303,22 @@ public class ScrollableLayout extends FrameLayout {
             }
         }
 
-        mDetector.onTouchEvent(event);
+        final boolean prevScrollingState = mIsScrolling;
+        mIsScrolling = mScrollDetector.onTouchEvent(event);
+        final boolean flingResult = mFlingDetector.onTouchEvent(event);
+
+        if (mIsDraggingDraggable && mIsScrolling
+                || (prevScrollingState && action == MotionEvent.ACTION_UP && flingResult)) {
+            final MotionEvent cancelEvent = MotionEvent.obtain(event);
+            try {
+                cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
+                super.dispatchTouchEvent(cancelEvent);
+            } finally {
+                cancelEvent.recycle();
+            }
+            return true;
+        }
+
         super.dispatchTouchEvent(event);
 
         return true;
@@ -340,7 +371,7 @@ public class ScrollableLayout extends FrameLayout {
         }
     }
 
-    private class ScrollableGestureListener extends GestureDetector.SimpleOnGestureListener {
+    private class ScrollGestureListener extends GestureListenerAdapter {
 
         private final int mTouchSlop;
         {
@@ -363,6 +394,9 @@ public class ScrollableLayout extends FrameLayout {
 
             return true;
         }
+    }
+
+    private class FlingGestureListener extends GestureListenerAdapter {
 
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
@@ -376,10 +410,19 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
-            mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, mMaxScrollY);
             removeCallbacks(mScrollRunnable);
+            mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, mMaxScrollY);
             post(mScrollRunnable);
-            return true;
+
+            if (mScroller.computeScrollOffset()) {
+
+                final int finalY = mScroller.getFinalY();
+                final int newY = getNewY(finalY);
+
+                return !(finalY == nowY || newY < 0);
+            }
+
+            return false;
         }
     }
 }
