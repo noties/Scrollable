@@ -36,6 +36,4 @@ android.libraryVariants.all { variant ->
 
 }
 
-//dependencies {
-//    compile 'ru.noties:debug:1.1.2@aar'
-//}
+apply from: 'https://raw.githubusercontent.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'

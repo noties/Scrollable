@@ -2,7 +2,6 @@
 <resources>
 
     <declare-styleable name="ScrollableLayout">
-        <attr name="scrollable_friction"            format="float" />
         <attr name="scrollable_maxScroll"          format="dimension" />
         <attr name="scrollable_scrollerFlywheel"   format="boolean" />
     </declare-styleable>

@@ -133,11 +133,9 @@ public class ScrollableLayout extends FrameLayout {
         final TypedArray array = context.obtainStyledAttributes(attributeSet, R.styleable.ScrollableLayout);
         try {
 
-            final float   friction = array.getFloat  (R.styleable.ScrollableLayout_scrollable_friction, ViewConfiguration.getScrollFriction());
             final boolean flyWheel = array.getBoolean(R.styleable.ScrollableLayout_scrollable_scrollerFlywheel, false);
 
             mScroller = initScroller(context, null, flyWheel);
-            mScroller.setFriction(friction);
 
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
 
