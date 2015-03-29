@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ru.noties.scrollable.ScrollableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:id="@+id/scrollable_layout"
+    app:scrollable_maxScroll="@dimen/header_height">
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/header_height"
+        android:id="@+id/dialog_placeholder"
+        android:focusable="true"
+        android:focusableInTouchMode="true"
+        android:background="@color/dialog_placeholder_color"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tabs_height"
+        android:gravity="center_vertical"
+        android:padding="16dip"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FF666666"
+        android:background="@color/white"
+        android:id="@+id/dialog_title"
+        android:text="Pick something"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/list_view"
+        android:background="@color/white"
+        android:layout_marginTop="@dimen/tabs_height"/>
+
+</ru.noties.scrollable.ScrollableLayout>

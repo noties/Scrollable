@@ -1,0 +1,22 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+    </style>
+
+    <style name="ScrollableDialogStyle">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@style/ScrollableDialogAnimations</item>
+    </style>
+
+    <style name="ScrollableDialogAnimations">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <!--<item name="android:windowExitAnimation">@android:anim/fade_out</item>-->
+    </style>
+
+</resources>
