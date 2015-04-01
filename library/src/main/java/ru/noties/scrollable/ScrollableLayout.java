@@ -110,6 +110,8 @@ public class ScrollableLayout extends FrameLayout {
 
     private boolean mIsScrolling;
 
+    private float mStartEventX;
+
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
     private final Rect mDraggableRect;
@@ -294,6 +296,8 @@ public class ScrollableLayout extends FrameLayout {
             mScroller.abortAnimation();
             removeCallbacks(mScrollRunnable);
 
+            mStartEventX = event.getX();
+
             if (mDraggableView != null && mDraggableView.getGlobalVisibleRect(mDraggableRect)) {
                 final int x = (int) (event.getRawX() + .5F);
                 final int y = (int) (event.getRawY() + .5F);
@@ -319,8 +323,17 @@ public class ScrollableLayout extends FrameLayout {
             return true;
         }
 
-        super.dispatchTouchEvent(event);
+//        if (mIsScrolling || flingResult) {
+//            final MotionEvent straightY = MotionEvent.obtain(event.getDownTime(), event.getEventTime(), action, mStartEventX, event.getY(), 0);
+//            try {
+//                super.dispatchTouchEvent(straightY);
+//                return true;
+//            } finally {
+//                straightY.recycle();
+//            }
+//        }
 
+        super.dispatchTouchEvent(event);
         return true;
     }
 
