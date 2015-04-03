@@ -118,6 +118,8 @@ public class ScrollableLayout extends FrameLayout {
 
     private SavedState mSavedState;
     private boolean mIsScrollYRestored;
+    private float mFlingFriction = ViewConfiguration.getScrollFriction();
+
 
     {
         mDraggableRect = new Rect();
@@ -146,6 +148,7 @@ public class ScrollableLayout extends FrameLayout {
             final boolean flyWheel = array.getBoolean(R.styleable.ScrollableLayout_scrollable_scrollerFlywheel, false);
 
             mScroller = initScroller(context, null, flyWheel);
+            mScroller.setFriction(mFlingFriction);
 
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
 
@@ -176,6 +179,10 @@ public class ScrollableLayout extends FrameLayout {
      * @param friction to be applied
      */
     public void setFriction(float friction) {
+        if (mFlingFriction == friction) {
+            return;
+        }
+        mFlingFriction = friction;
         mScroller.setFriction(friction);
     }
 
@@ -402,8 +409,10 @@ public class ScrollableLayout extends FrameLayout {
 
         if (mSavedState != null) {
             mMaxScrollY = ss.maxScrollY;
-
             mIsScrollYRestored = false;
+            mFlingFriction = ss.flingFriction;
+            mScroller.setFriction(mFlingFriction);
+
             requestLayout();
         }
     }
@@ -414,6 +423,7 @@ public class ScrollableLayout extends FrameLayout {
         SavedState ss = new SavedState(superState);
         ss.maxScrollY = mMaxScrollY;
         ss.scrollPosition = getScrollY();
+        ss.flingFriction = mFlingFriction;
         return ss;
     }
 
@@ -476,6 +486,7 @@ public class ScrollableLayout extends FrameLayout {
     static class SavedState extends BaseSavedState {
         public int maxScrollY;
         public int scrollPosition;
+        public float flingFriction;
 
         SavedState(Parcelable superState) {
             super(superState);
@@ -485,6 +496,7 @@ public class ScrollableLayout extends FrameLayout {
             super(source);
             maxScrollY = source.readInt();
             scrollPosition = source.readInt();
+            flingFriction = source.readFloat();
         }
 
         @Override
@@ -492,6 +504,7 @@ public class ScrollableLayout extends FrameLayout {
             super.writeToParcel(dest, flags);
             dest.writeInt(maxScrollY);
             dest.writeInt(scrollPosition);
+            dest.writeFloat(flingFriction);
         }
 
         @Override
@@ -499,7 +512,8 @@ public class ScrollableLayout extends FrameLayout {
             return "ScrollableLayout.SavedState{"
                     + Integer.toHexString(System.identityHashCode(this))
                     + " maxScrollY=" + maxScrollY + ","
-                    + " scrollPosition=" + scrollPosition + "}";
+                    + " scrollPosition=" + scrollPosition + ","
+                    + " flingFriction=" + flingFriction + "}";
         }
 
         public static final Parcelable.Creator<SavedState> CREATOR
