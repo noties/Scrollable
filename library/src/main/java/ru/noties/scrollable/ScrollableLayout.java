@@ -3,6 +3,8 @@ package ru.noties.scrollable;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -113,6 +115,12 @@ public class ScrollableLayout extends FrameLayout {
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
     private final Rect mDraggableRect;
+
+    private SavedState mSavedState;
+    private boolean mIsScrollYRestored;
+    private float mFlingFriction = ViewConfiguration.getScrollFriction();
+
+
     {
         mDraggableRect = new Rect();
     }
@@ -140,6 +148,7 @@ public class ScrollableLayout extends FrameLayout {
             final boolean flyWheel = array.getBoolean(R.styleable.ScrollableLayout_scrollable_scrollerFlywheel, false);
 
             mScroller = initScroller(context, null, flyWheel);
+            mScroller.setFriction(mFlingFriction);
 
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
 
@@ -170,6 +179,10 @@ public class ScrollableLayout extends FrameLayout {
      * @param friction to be applied
      */
     public void setFriction(float friction) {
+        if (mFlingFriction == friction) {
+            return;
+        }
+        mFlingFriction = friction;
         mScroller.setFriction(friction);
     }
 
@@ -363,12 +376,55 @@ public class ScrollableLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+        // restore scroll position
+        if ((mSavedState != null) && !mIsScrollYRestored) {
+            int scrollY = mSavedState.scrollPosition;
+
+            // clamp
+            if (scrollY < 0) {
+                scrollY = 0;
+            } else if (scrollY > mMaxScrollY) {
+                scrollY = mMaxScrollY;
+            }
+
+            mIsScrollYRestored = true;
+
+            super.scrollTo(0, scrollY);
+        }
+
         int childTop = top;
         for (int i = 0; i < getChildCount(); i++) {
             final View view = getChildAt(i);
             view.layout(left, childTop, right, childTop + view.getMeasuredHeight());
             childTop += view.getMeasuredHeight();
         }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+
+        mSavedState = ss;
+
+        if (mSavedState != null) {
+            mMaxScrollY = ss.maxScrollY;
+            mIsScrollYRestored = false;
+            mFlingFriction = ss.flingFriction;
+            mScroller.setFriction(mFlingFriction);
+
+            requestLayout();
+        }
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.maxScrollY = mMaxScrollY;
+        ss.scrollPosition = getScrollY();
+        ss.flingFriction = mFlingFriction;
+        return ss;
     }
 
     private class ScrollGestureListener extends GestureListenerAdapter {
@@ -424,5 +480,51 @@ public class ScrollableLayout extends FrameLayout {
 
             return false;
         }
+    }
+
+
+    static class SavedState extends BaseSavedState {
+        public int maxScrollY;
+        public int scrollPosition;
+        public float flingFriction;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        public SavedState(Parcel source) {
+            super(source);
+            maxScrollY = source.readInt();
+            scrollPosition = source.readInt();
+            flingFriction = source.readFloat();
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            super.writeToParcel(dest, flags);
+            dest.writeInt(maxScrollY);
+            dest.writeInt(scrollPosition);
+            dest.writeFloat(flingFriction);
+        }
+
+        @Override
+        public String toString() {
+            return "ScrollableLayout.SavedState{"
+                    + Integer.toHexString(System.identityHashCode(this))
+                    + " maxScrollY=" + maxScrollY + ","
+                    + " scrollPosition=" + scrollPosition + ","
+                    + " flingFriction=" + flingFriction + "}";
+        }
+
+        public static final Parcelable.Creator<SavedState> CREATOR
+                = new Parcelable.Creator<SavedState>() {
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 }
