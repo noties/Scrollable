@@ -16,6 +16,8 @@ import ru.noties.scrollable.ScrollableLayout;
 
 public class MainActivity extends BaseActivity implements ConfigurationFragmentCallbacks {
 
+    private static final String ARG_LAST_SCROLL_Y = "arg.LastScrollY";
+
     private ScrollableLayout mScrollableLayout;
 
     @Override
@@ -57,6 +59,22 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
                 header.setTranslationY(y / 2);
             }
         });
+
+        if (savedInstanceState != null) {
+            final int y = savedInstanceState.getInt(ARG_LAST_SCROLL_Y);
+            mScrollableLayout.post(new Runnable() {
+                @Override
+                public void run() {
+                    mScrollableLayout.scrollTo(0, y);
+                }
+            });
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putInt(ARG_LAST_SCROLL_Y, mScrollableLayout.getScrollY());
+        super.onSaveInstanceState(outState);
     }
 
     private List<BaseFragment> getFragments() {
