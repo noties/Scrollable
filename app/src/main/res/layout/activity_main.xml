@@ -4,7 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/scrollable_layout"
-    app:scrollable_maxScroll="@dimen/header_height">
+    app:scrollable_maxScroll="@dimen/header_height"
+    app:scrollable_considerIdleMillis="125"
+    app:scrollable_friction="0.075"
+    app:scrollable_closeUpAnimationMillis="250"
+    app:scrollable_defaultCloseUp="true"
+    app:scrollable_scrollerFlywheel="false"
+    app:scrollable_closeUpAnimatorInterpolator="@android:anim/accelerate_decelerate_interpolator">
 
     <LinearLayout
         android:layout_width="match_parent"

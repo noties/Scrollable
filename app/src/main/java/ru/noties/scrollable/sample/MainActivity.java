@@ -28,6 +28,7 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
 
         mScrollableLayout = findView(this, R.id.scrollable_layout);
         mScrollableLayout.setDraggableView(tabs);
+
         final ViewPager viewPager = findView(this, R.id.view_pager);
         final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), getResources(), getFragments());
         viewPager.setAdapter(adapter);

@@ -1,13 +1,20 @@
 package ru.noties.scrollable;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.AttributeSet;
+import android.util.Property;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 import android.widget.Scroller;
@@ -99,6 +106,9 @@ import android.widget.Scroller;
  */
 public class ScrollableLayout extends FrameLayout {
 
+    private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
+    private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
+
     private Scroller mScroller;
     private GestureDetector mScrollDetector;
     private GestureDetector mFlingDetector;
@@ -109,8 +119,18 @@ public class ScrollableLayout extends FrameLayout {
     private int mMaxScrollY;
 
     private boolean mIsScrolling;
+    private boolean mIsFlinging;
 
-    private float mStartEventX;
+    private MotionEventHook mMotionEventHook;
+
+    private CloseUpAlgorithm mCloseUpAlgorithm;
+    private ObjectAnimator mCloseUpAnimator;
+
+    private boolean mSelfUpdateScroll;
+    private boolean mSelfUpdateFling;
+
+    private CloseUpIdleAnimationTime mCloseUpIdleAnimationTime;
+    private CloseUpAnimatorConfigurator mCloseAnimatorConfigurator;
 
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
@@ -118,6 +138,8 @@ public class ScrollableLayout extends FrameLayout {
     {
         mDraggableRect = new Rect();
     }
+
+    private long mConsiderIdleMillis;
 
     public ScrollableLayout(Context context) {
         super(context);
@@ -140,10 +162,36 @@ public class ScrollableLayout extends FrameLayout {
         try {
 
             final boolean flyWheel = array.getBoolean(R.styleable.ScrollableLayout_scrollable_scrollerFlywheel, false);
-
             mScroller = initScroller(context, null, flyWheel);
 
+            final float friction = array.getFloat(R.styleable.ScrollableLayout_scrollable_friction, Float.NaN);
+            if (friction == friction) {
+                setFriction(friction);
+            }
+
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
+
+            final long considerIdleMillis = array.getInteger(
+                    R.styleable.ScrollableLayout_scrollable_considerIdleMillis,
+                    DEFAULT_CONSIDER_IDLE_MILLIS
+            );
+            setConsiderIdleMillis(considerIdleMillis);
+
+            final boolean useDefaultCloseUp = array.getBoolean(R.styleable.ScrollableLayout_scrollable_defaultCloseUp, false);
+            if (useDefaultCloseUp) {
+                setCloseUpAlgorithm(new DefaultCloseUpAlgorithm());
+            }
+
+            final int closeUpAnimationMillis = array.getInteger(R.styleable.ScrollableLayout_scrollable_closeUpAnimationMillis, -1);
+            if (closeUpAnimationMillis != -1) {
+                setCloseUpIdleAnimationTime(new SimpleCloseUpIdleAnimationTime(closeUpAnimationMillis));
+            }
+
+            final int interpolatorResId = array.getResourceId(R.styleable.ScrollableLayout_scrollable_closeUpAnimatorInterpolator, 0);
+            if (interpolatorResId != 0) {
+                final Interpolator interpolator = AnimationUtils.loadInterpolator(context, interpolatorResId);
+                setCloseAnimatorConfigurator(new InterpolatorCloseUpAnimatorConfigurator(interpolator));
+            }
 
         } finally {
             array.recycle();
@@ -152,7 +200,14 @@ public class ScrollableLayout extends FrameLayout {
         setVerticalScrollBarEnabled(true);
 
         mScrollDetector = new GestureDetector(context, new ScrollGestureListener());
-        mFlingDetector  = new GestureDetector(context, new FlingGestureListener());
+        mFlingDetector  = new GestureDetector(context, new FlingGestureListener(context));
+
+        mMotionEventHook = new MotionEventHook(new MotionEventHookCallback() {
+            @Override
+            public void apply(MotionEvent event) {
+                ScrollableLayout.super.dispatchTouchEvent(event);
+            }
+        });
     }
 
     /**
@@ -201,6 +256,25 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     /**
+     * Note that this value might be set with xml definition (<pre>{@code app:scrollable_considerIdleMillis="100"}</pre>)
+     * @param millis millis after which current scroll
+     *               state would be considered idle and thus firing close up logic if set
+     * @see #getConsiderIdleMillis()
+     * @see #DEFAULT_CONSIDER_IDLE_MILLIS
+     */
+    public void setConsiderIdleMillis(long millis) {
+        mConsiderIdleMillis = millis;
+    }
+
+    /**
+     * @return current value of millis after which scroll state would be considered idle
+     * @see #setConsiderIdleMillis(long)
+     */
+    public long getConsiderIdleMillis() {
+        return mConsiderIdleMillis;
+    }
+
+    /**
      * Pass an {@link ru.noties.scrollable.OnScrollChangedListener}
      * if you wish to get notifications when scroll state of <code>this</code> View has changed.
      * It\'s helpful for implementing own logic which depends on scroll state (e.g. parallax, alpha, etc)
@@ -214,12 +288,65 @@ public class ScrollableLayout extends FrameLayout {
     /**
      * @see android.view.View#onScrollChanged(int, int, int, int)
      * @see ru.noties.scrollable.OnScrollChangedListener#onScrollChanged(int, int, int)
+     * @see CloseUpAlgorithm
      */
     @Override
     public void onScrollChanged(int l, int t, int oldL, int oldT) {
-        if (mOnScrollChangedListener != null) {
+
+        final boolean changed = t != oldT;
+
+        if (changed && mOnScrollChangedListener != null) {
             mOnScrollChangedListener.onScrollChanged(t, oldT, mMaxScrollY);
         }
+
+        if (mCloseUpAlgorithm != null) {
+            removeCallbacks(mIdleRunnable);
+            if (!mSelfUpdateScroll && changed) {
+                postDelayed(mIdleRunnable, mConsiderIdleMillis);
+            }
+        }
+    }
+
+    protected void setSelfUpdateScroll(boolean value) {
+        mSelfUpdateScroll = value;
+    }
+
+    protected boolean isSelfUpdateScroll() {
+        return mSelfUpdateScroll;
+    }
+
+    /**
+     * Note that {@link DefaultCloseUpAlgorithm} might be set with
+     * xml definition (<pre>{@code app:scrollable_defaultCloseUp="true"}</pre>)
+     * @param closeUpAlgorithm {@link CloseUpAlgorithm} implementation, might be null
+     * @see CloseUpAlgorithm
+     * @see DefaultCloseUpAlgorithm
+     */
+    public void setCloseUpAlgorithm(CloseUpAlgorithm closeUpAlgorithm) {
+        this.mCloseUpAlgorithm = closeUpAlgorithm;
+    }
+
+    /**
+     * Note that {@link SimpleCloseUpIdleAnimationTime} might be set with xml definition
+     * (<pre>{@code app:scrollable_closeUpAnimationMillis="200"}</pre>)
+     * @param closeUpIdleAnimationTime {@link CloseUpIdleAnimationTime} implementation, might be null
+     * @see CloseUpIdleAnimationTime
+     * @see SimpleCloseUpIdleAnimationTime
+     * @see #DEFAULT_IDLE_CLOSE_UP_ANIMATION
+     */
+    public void setCloseUpIdleAnimationTime(CloseUpIdleAnimationTime closeUpIdleAnimationTime) {
+        this.mCloseUpIdleAnimationTime = closeUpIdleAnimationTime;
+    }
+
+    /**
+     * @param configurator {@link CloseUpAnimatorConfigurator} implementation
+     *                                                        to process current close up
+     *                                                        {@link android.animation.ObjectAnimator}, might be null
+     * @see CloseUpAnimatorConfigurator
+     * @see android.animation.ObjectAnimator
+     */
+    public void setCloseAnimatorConfigurator(CloseUpAnimatorConfigurator configurator) {
+        this.mCloseAnimatorConfigurator = configurator;
     }
 
     /**
@@ -231,6 +358,7 @@ public class ScrollableLayout extends FrameLayout {
     public void scrollTo(int x, int y) {
 
         final int newY = getNewY(y);
+
         if (newY < 0) {
             return;
         }
@@ -247,7 +375,7 @@ public class ScrollableLayout extends FrameLayout {
         }
 
         final int direction = y - currentY;
-        final boolean isScrollingBottomTop = y - currentY < 0;
+        final boolean isScrollingBottomTop = direction < 0;
 
         if (mCanScrollVerticallyDelegate != null) {
 
@@ -255,6 +383,7 @@ public class ScrollableLayout extends FrameLayout {
 
                 // if not dragging draggable then return, else do not return
                 if (!mIsDraggingDraggable
+                        && !mSelfUpdateScroll
                         && mCanScrollVerticallyDelegate.canScrollVertically(direction)) {
                     return -1;
                 }
@@ -290,13 +419,9 @@ public class ScrollableLayout extends FrameLayout {
     public boolean dispatchTouchEvent(@SuppressWarnings("NullableProblems") MotionEvent event) {
 
         final int action = event.getActionMasked();
-
         if (action == MotionEvent.ACTION_DOWN) {
 
             mScroller.abortAnimation();
-            removeCallbacks(mScrollRunnable);
-
-            mStartEventX = event.getX();
 
             if (mDraggableView != null && mDraggableView.getGlobalVisibleRect(mDraggableRect)) {
                 final int x = (int) (event.getRawX() + .5F);
@@ -307,54 +432,49 @@ public class ScrollableLayout extends FrameLayout {
             }
         }
 
-        final boolean prevScrollingState = mIsScrolling;
-        mIsScrolling = mScrollDetector.onTouchEvent(event);
-        final boolean flingResult = mFlingDetector.onTouchEvent(event);
+        final boolean isPrevScrolling = mIsScrolling;
+        final boolean isPrevFlinging  = mIsFlinging;
 
-        if (mIsDraggingDraggable && mIsScrolling
-                || (prevScrollingState && action == MotionEvent.ACTION_UP && flingResult)) {
-            final MotionEvent cancelEvent = MotionEvent.obtain(event);
-            try {
-                cancelEvent.setAction(MotionEvent.ACTION_CANCEL);
-                super.dispatchTouchEvent(cancelEvent);
-            } finally {
-                cancelEvent.recycle();
+        mIsFlinging     = mFlingDetector .onTouchEvent(event);
+        mIsScrolling    = mScrollDetector.onTouchEvent(event);
+
+        removeCallbacks(mScrollRunnable);
+        post(mScrollRunnable);
+
+        final boolean isIntercepted     = mIsScrolling || mIsFlinging;
+        final boolean isPrevIntercepted = isPrevScrolling || isPrevFlinging;
+
+        final boolean shouldRedirectDownTouch = action == MotionEvent.ACTION_MOVE
+                && (!isIntercepted && isPrevIntercepted)
+                && getScrollY() == mMaxScrollY;
+
+        if (isIntercepted || isPrevIntercepted) {
+
+            mMotionEventHook.hook(event, MotionEvent.ACTION_CANCEL);
+
+            if (!isPrevIntercepted) {
+                return true;
             }
-            return true;
         }
 
-//        if (mIsScrolling || flingResult) {
-//            final MotionEvent straightY = MotionEvent.obtain(event.getDownTime(), event.getEventTime(), action, mStartEventX, event.getY(), 0);
-//            try {
-//                super.dispatchTouchEvent(straightY);
-//                return true;
-//            } finally {
-//                straightY.recycle();
-//            }
-//        }
+        if (shouldRedirectDownTouch) {
+            mMotionEventHook.hook(event, MotionEvent.ACTION_DOWN);
+        }
 
         super.dispatchTouchEvent(event);
         return true;
     }
 
-    private final Runnable mScrollRunnable = new Runnable() {
-        @Override
-        public void run() {
+    private void cancelIdleAnimationIfRunning(boolean removeCallbacks) {
 
-            if (mScroller.computeScrollOffset()) {
-
-                final int y = mScroller.getCurrY();
-                final int nowY = getScrollY();
-                final int diff = y - nowY;
-
-                if (diff != 0) {
-                    scrollBy(0, diff);
-                }
-
-                post(this);
-            }
+        if (removeCallbacks) {
+            removeCallbacks(mIdleRunnable);
         }
-    };
+
+        if (mCloseUpAnimator != null && mCloseUpAnimator.isRunning()) {
+            mCloseUpAnimator.cancel();
+        }
+    }
 
     @Override
     public void computeScroll() {
@@ -384,6 +504,85 @@ public class ScrollableLayout extends FrameLayout {
         }
     }
 
+    private final Runnable mScrollRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            final boolean isContinue = mScroller.computeScrollOffset();
+            mSelfUpdateFling = isContinue;
+
+            if (isContinue) {
+
+                final int y = mScroller.getCurrY();
+                final int nowY = getScrollY();
+                final int diff = y - nowY;
+
+                if (diff != 0) {
+                    scrollBy(0, diff);
+                }
+
+                post(this);
+            }
+        }
+    };
+
+    private final Runnable mIdleRunnable = new Runnable() {
+        @Override
+        public void run() {
+
+            cancelIdleAnimationIfRunning(false);
+
+            if (mSelfUpdateScroll || mSelfUpdateFling) {
+                return;
+            }
+
+            final int nowY = getScrollY();
+
+            if (nowY == 0
+                    || nowY == mMaxScrollY) {
+                return;
+            }
+
+            final int endY = mCloseUpAlgorithm.getIdleFinalY(ScrollableLayout.this, nowY, mMaxScrollY);
+
+            if (nowY == endY) {
+                return;
+            }
+
+            mCloseUpAnimator = ObjectAnimator.ofInt(ScrollableLayout.this, mCloseUpAnimationProperty, nowY, endY);
+
+            final long duration = mCloseUpIdleAnimationTime != null
+                    ? mCloseUpIdleAnimationTime.compute(ScrollableLayout.this, nowY, endY, mMaxScrollY)
+                    : DEFAULT_IDLE_CLOSE_UP_ANIMATION;
+
+            mCloseUpAnimator.setDuration(duration);
+            mCloseUpAnimator.addListener(new AnimatorListenerAdapter() {
+
+                @Override
+                public void onAnimationStart(Animator animation) {
+                    ;
+                    mSelfUpdateScroll = true;
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    mSelfUpdateScroll = false;
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+                    mSelfUpdateScroll = false;
+                }
+            });
+
+            if (mCloseAnimatorConfigurator != null) {
+                mCloseAnimatorConfigurator.configure(mCloseUpAnimator);
+            }
+
+            mCloseUpAnimator.start();
+        }
+    };
+
     private class ScrollGestureListener extends GestureListenerAdapter {
 
         private final int mTouchSlop;
@@ -403,16 +602,33 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
-            scrollBy(0, (int) distanceY);
+            final int now = getScrollY();
+            scrollBy(0, (int) (distanceY + .5F));
 
-            return true;
+            return now != getScrollY();
         }
     }
 
     private class FlingGestureListener extends GestureListenerAdapter {
 
+        private static final int MIN_FLING_DISTANCE_DIP = 12;
+
+        private final int mMinFlingDistance;
+        private final float mMinVelocity;
+
+        FlingGestureListener(Context context) {
+            this.mMinFlingDistance = DipUtils.dipToPx(context, MIN_FLING_DISTANCE_DIP);
+
+            final ViewConfiguration configuration = ViewConfiguration.get(context);
+            this.mMinVelocity = configuration.getScaledMinimumFlingVelocity();
+        }
+
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+
+            if (Math.abs(velocityY) < mMinVelocity) {
+                return false;
+            }
 
             if (Math.abs(velocityX) > Math.abs(velocityY)) {
                 return false;
@@ -423,13 +639,31 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
-            removeCallbacks(mScrollRunnable);
             mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, mMaxScrollY);
-            post(mScrollRunnable);
 
             if (mScroller.computeScrollOffset()) {
 
-                final int finalY = mScroller.getFinalY();
+                final int suggestedY = mScroller.getFinalY();
+
+                if (Math.abs(nowY - suggestedY) < mMinFlingDistance) {
+                    mScroller.abortAnimation();
+                    return false;
+                }
+
+                final int finalY;
+                if (suggestedY == nowY || mCloseUpAlgorithm == null) {
+                    finalY = suggestedY;
+                } else {
+                    finalY = mCloseUpAlgorithm.getFlingFinalY(
+                            ScrollableLayout.this,
+                            suggestedY - nowY < 0,
+                            nowY,
+                            suggestedY,
+                            mMaxScrollY
+                    );
+                    mScroller.setFinalY(finalY);
+                }
+
                 final int newY = getNewY(finalY);
 
                 return !(finalY == nowY || newY < 0);
@@ -437,5 +671,99 @@ public class ScrollableLayout extends FrameLayout {
 
             return false;
         }
+    }
+
+    private static class MotionEventHook {
+
+        final MotionEventHookCallback callback;
+
+        MotionEventHook(MotionEventHookCallback callback) {
+            this.callback = callback;
+        }
+
+        void hook(MotionEvent event, int action) {
+            final int historyAction = event.getAction();
+            event.setAction(action);
+            callback.apply(event);
+            event.setAction(historyAction);
+        }
+    }
+
+    private interface MotionEventHookCallback {
+        void apply(MotionEvent event);
+    }
+
+    private final Property<ScrollableLayout, Integer> mCloseUpAnimationProperty
+            = new Property<ScrollableLayout, Integer>(Integer.class, "scrollY") {
+
+        @Override
+        public Integer get(ScrollableLayout object) {
+            return object.getScrollY();
+        }
+
+        @Override
+        public void set(final ScrollableLayout layout, final Integer value) {
+            layout.setScrollY(value);
+        }
+    };
+
+    @Override
+    public Parcelable onSaveInstanceState() {
+    	final Parcelable superState = super.onSaveInstanceState();
+    	final ScrollableLayoutSavedState savedState = new ScrollableLayoutSavedState(superState);
+
+        savedState.scrollY = getScrollY();
+
+    	return savedState;
+    }
+
+    @Override
+    public void onRestoreInstanceState(Parcelable state) {
+
+    	if (!(state instanceof ScrollableLayoutSavedState)) {
+    		super.onRestoreInstanceState(state);
+    		return;
+    	}
+
+    	final ScrollableLayoutSavedState in = (ScrollableLayoutSavedState) state;
+    	super.onRestoreInstanceState(in.getSuperState());
+
+        setScrollY(in.scrollY);
+    }
+
+    private static class ScrollableLayoutSavedState extends BaseSavedState {
+
+        int scrollY;
+
+    	public ScrollableLayoutSavedState(Parcel source) {
+    		super(source);
+
+            scrollY = source.readInt();
+    	}
+
+    	public ScrollableLayoutSavedState(Parcelable superState) {
+    		super(superState);
+    	}
+
+    	@Override
+    	public void writeToParcel(Parcel out, int flags) {
+    		super.writeToParcel(out, flags);
+
+            out.writeInt(scrollY);
+    	}
+
+    	public static final Creator<ScrollableLayoutSavedState> CREATOR
+    			= new Creator<ScrollableLayoutSavedState>() {
+
+    		@Override
+    		public ScrollableLayoutSavedState createFromParcel(Parcel in) {
+    			return new ScrollableLayoutSavedState(in);
+    		}
+
+    		@Override
+    		public ScrollableLayoutSavedState[] newArray(int size) {
+    			return new ScrollableLayoutSavedState[size];
+    		}
+    	};
     }
 }
