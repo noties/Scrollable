@@ -2,7 +2,7 @@ package ru.noties.scrollable;
 
 /**
  * Default implementation of the {@link CloseUpAlgorithm}
- * With this implementation {@link ScrollableLayout} would have only two states - collapsed & expanded
+ * With this implementation {@link ScrollableLayout} would have only two states - collapsed &amp; expanded
  * @see ScrollableLayout#setCloseUpAlgorithm(CloseUpAlgorithm)
  * Created by Dimitry Ivanov on 23.05.2015.
  */
