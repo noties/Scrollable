@@ -4,6 +4,12 @@
     <declare-styleable name="ScrollableLayout">
         <attr name="scrollable_maxScroll"          format="dimension" />
         <attr name="scrollable_scrollerFlywheel"   format="boolean" />
+        <attr name="scrollable_considerIdleMillis" format="integer" />
+        <attr name="scrollable_defaultCloseUp"     format="boolean" />
+        <attr name="scrollable_friction"           format="float" />
+
+        <attr name="scrollable_closeUpAnimationMillis" format="integer" />
+        <attr name="scrollable_closeUpAnimatorInterpolator" format="reference" />
     </declare-styleable>
 
 </resources>

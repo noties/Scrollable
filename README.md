@@ -13,6 +13,10 @@ This library encapsulates scrolling logic when implementing *scrolling tabs* (ho
 compile 'ru.noties:scrollable:x.x.x'
 ```
 
+## What new (1.1.0)
+* Improved interception of ghost touches when `ScrollableLayout.getScrollY()` > 0 && < max scroll y
+* Added `Close-up logic` (turned off by default)
+
 
 ## Howto
 Simply wrap your views in `ru.noties.scrollable.ScrollableLayout`. The final xml might be looking something like that (don't copy, it's not valid):
@@ -34,7 +38,7 @@ Simply wrap your views in `ru.noties.scrollable.ScrollableLayout`. The final xml
         <TextView
             android:layout_width="match_parent"
             android:layout_height="@dimen/header_height" --!(2)
-            android:background="@color/header_background" 
+            android:background="@color/header_background"
             android:textColor="@color/white"
             android:textSize="30sp"
             android:text="Header"
@@ -127,7 +131,34 @@ public boolean canScrollVertically(int direction) {
 
 Additionally you could provide a ScrollableLayout with a `ru.noties.scrollable.OnScrollChangedListener` and implement where your own logic. It's the place to implement parallax and all other possible stuff.
 
-Hope this will help.
+## Close-up logic
+Since `1.1.0` it's possible to evaluate custom close-up logic. For a simple close-up (with only two states of ScrollableLayout - collapsed & expanded) use `ru.noties.scrollable.DefaultCloseUpAlgorithm`. For more fancy stuff create your own by implementing `ru.noties.scrollable.CloseUpAlgorithm`.
+
+#### CloseUpAlgorithm
+Might be set with `ScrollableLayout.setCloseUpAlgorithm()` or (if default implementation is desired) via xml definition `app:scrollable_defaultCloseUp="true"`
+
+#### CloseUpIdleAnimationTime
+`ru.noties.scrollable.CloseUpIdleAnimationTime` is used to compute the duration of the close-up animation. For a simple case when duration for all close-ups is constant `ru.noties.scrollable.SimpleCloseUpIdleAnimationTime` might be used via `ScrollableLayout.setCloseUpIdleAnimationTime()` or via xml definition `app:scrollable_closeUpAnimationMillis="200"`.
+Default value is `200` ms.
+
+#### CloseUpConsiderIdleMillis
+Value in milliseconds after which scroll state of a ScrollableLayout is considered idle and thus close-up logic is evaluated. Might be set via `ScrollableLayout.setConsiderIdleMillis()` or via xml definition `app:scrollable_considerIdleMillis="100"`.
+Default value is `100` ms.
+
+#### CloseUpAnimatorConfigurator
+`ru.noties.scrollable.CloseUpAnimatorConfigurator` is used to configure an `ObjectAnimator` of a pending close-up animation. If the only configurable value is an `Interpolator` then `ru.noties.scrollable.InterpolatorCloseUpAnimatorConfigurator` might be used via `ScrollableLayout.setCloseUpAnimatorConfigurator()` or via xml definition `app:scrollable_closeUpAnimatorInterpolator="@android:anim/bounce_interpolator"`.
+Default value is `null`
+
+## XML attributes
+```xml
+    app:scrollable_maxScroll="@dimen/header_height"
+    app:scrollable_considerIdleMillis="100"
+    app:scrollable_friction="0.075"
+    app:scrollable_closeUpAnimationMillis="200"
+    app:scrollable_defaultCloseUp="true"
+    app:scrollable_scrollerFlywheel="false"
+    app:scrollable_closeUpAnimatorInterpolator="@android:anim/bounce_interpolator"
+```
 
 
 ## License
@@ -147,4 +178,3 @@ Hope this will help.
   See the License for the specific language governing permissions and
   limitations under the License.
 ```
-

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/scrollable_layout"
-    app:scrollable_maxScroll="@dimen/header_height">
+    app:scrollable_maxScroll="@dimen/header_height"
+    app:scrollable_defaultCloseUp="true">
 
     <View
         android:layout_width="match_parent"
