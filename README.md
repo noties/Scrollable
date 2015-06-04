@@ -13,7 +13,12 @@ This library encapsulates scrolling logic when implementing *scrolling tabs* (ho
 compile 'ru.noties:scrollable:x.x.x'
 ```
 
-## What new (1.1.0)
+
+## What's new (1.1.1)
+* Using ScrollableLayout with Toolbar fix
+
+
+### What's new (1.1.0)
 * Improved interception of ghost touches when `ScrollableLayout.getScrollY()` > 0 && < max scroll y
 * Added `Close-up logic` (turned off by default)
 
