@@ -29,6 +29,7 @@ import android.widget.Scroller;
  * Note, that this ViewGroup will layout it's children as if it were an ordinary {@link android.widget.LinearLayout}
  * with orientation set to {@link android.widget.LinearLayout#VERTICAL}.
  * No paddings or margins will affect the layout position of children,
+
  * although margins will certainly affect measurements.
  * </p>
  * <p>
@@ -496,7 +497,8 @@ public class ScrollableLayout extends FrameLayout {
 
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        int childTop = top;
+        //int childTop = top;
+		int childTop = 0;
         for (int i = 0; i < getChildCount(); i++) {
             final View view = getChildAt(i);
             view.layout(left, childTop, right, childTop + view.getMeasuredHeight());
