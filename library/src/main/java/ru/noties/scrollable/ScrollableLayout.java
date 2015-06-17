@@ -17,7 +17,6 @@ import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
-import android.widget.Scroller;
 
 /**
  * <p>
@@ -110,7 +109,7 @@ public class ScrollableLayout extends FrameLayout {
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
 
-    private Scroller mScroller;
+    private ScrollableScroller mScroller;
     private GestureDetector mScrollDetector;
     private GestureDetector mFlingDetector;
 
@@ -218,8 +217,8 @@ public class ScrollableLayout extends FrameLayout {
      * @param flywheel {@link android.widget.Scroller#Scroller(android.content.Context, android.view.animation.Interpolator, boolean)}
      * @return new instance of {@link android.widget.Scroller} must not bu null
      */
-    protected Scroller initScroller(Context context, Interpolator interpolator, boolean flywheel) {
-        return new Scroller(context, interpolator, flywheel);
+    protected ScrollableScroller initScroller(Context context, Interpolator interpolator, boolean flywheel) {
+        return new ScrollableScroller(context, interpolator, flywheel);
     }
 
     /**
@@ -562,7 +561,6 @@ public class ScrollableLayout extends FrameLayout {
 
                 @Override
                 public void onAnimationStart(Animator animation) {
-                    ;
                     mSelfUpdateScroll = true;
                 }
 
