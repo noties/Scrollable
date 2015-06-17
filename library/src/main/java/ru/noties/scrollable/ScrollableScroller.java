@@ -534,9 +534,6 @@ public class ScrollableScroller  {
         mFinished = false;
     }
 
-    /**
-     * @hide
-     */
     public boolean isScrollingInDirection(float xvel, float yvel) {
         return !mFinished && Math.signum(xvel) == Math.signum(mFinalX - mStartX) &&
                 Math.signum(yvel) == Math.signum(mFinalY - mStartY);
