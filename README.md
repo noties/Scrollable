@@ -14,7 +14,11 @@ compile 'ru.noties:scrollable:x.x.x'
 ```
 
 
-## What's new (1.1.1)
+## What's new (1.1.2)
+* Bundled with own Scroller implementation to be independent of device's Scroller
+
+
+### What's new (1.1.1)
 * Using ScrollableLayout with Toolbar fix
 
 
