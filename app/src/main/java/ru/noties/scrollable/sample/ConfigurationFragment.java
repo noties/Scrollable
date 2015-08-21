@@ -74,6 +74,14 @@ public class ConfigurationFragment extends BaseFragment {
                 mCallbacks.openDialog(seekBarHelper.getCurrentFriction(seekBar));
             }
         });
+
+        final View insideFragment = view.findViewById(R.id.configuration_inside_fragment);
+        insideFragment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCallbacks.openActivity(ScrollableInsideFragmentActivity.makeIntent(getActivity()));
+            }
+        });
     }
 
     @Override
@@ -125,7 +133,7 @@ public class ConfigurationFragment extends BaseFragment {
         }
     }
 
-    private static interface OnGlobalFrictionChangedListener {
+    private interface OnGlobalFrictionChangedListener {
         void onChanged(float friction);
     }
 }

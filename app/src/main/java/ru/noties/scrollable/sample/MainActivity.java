@@ -1,6 +1,6 @@
 package ru.noties.scrollable.sample;
 
-import android.content.res.Resources;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
@@ -26,12 +26,12 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
         setContentView(R.layout.activity_main);
 
         final View header = findViewById(R.id.header);
-        final TabsLayout tabs = findView(this, R.id.tabs);
+        final TabsLayout tabs = findView(R.id.tabs);
 
-        mScrollableLayout = findView(this, R.id.scrollable_layout);
+        mScrollableLayout = findView(R.id.scrollable_layout);
         mScrollableLayout.setDraggableView(tabs);
 
-        final ViewPager viewPager = findView(this, R.id.view_pager);
+        final ViewPager viewPager = findView(R.id.view_pager);
         final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), getResources(), getFragments());
         viewPager.setAdapter(adapter);
 
@@ -124,40 +124,9 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
         dialog.show(getSupportFragmentManager(), null);
     }
 
-    private static class ViewPagerAdapter extends FragmentPagerAdapterExt {
-
-        private final Resources mResources;
-        private final List<BaseFragment> mFragments;
-
-        public ViewPagerAdapter(FragmentManager fm, Resources r, List<BaseFragment> fragments) {
-            super(fm);
-            this.mResources = r;
-            this.mFragments = fragments;
-        }
-
-        @Override
-        public BaseFragment getItem(int position) {
-            return mFragments.get(position);
-        }
-
-        @Override
-        public int getCount() {
-            return mFragments != null ? mFragments.size() : 0;
-        }
-
-        @Override
-        public String makeFragmentTag(int position) {
-            return mFragments.get(position).getSelfTag();
-        }
-
-        @Override
-        public CharSequence getPageTitle(int position) {
-            return mFragments.get(position).getTitle(mResources);
-        }
-
-        boolean canScrollVertically(int position, int direction) {
-            return getItem(position).canScrollVertically(direction);
-        }
+    @Override
+    public void openActivity(Intent intent) {
+        startActivity(intent);
     }
 
 

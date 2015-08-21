@@ -53,6 +53,14 @@
             android:id="@+id/configuration_open_dialog"
             android:textAppearance="?android:attr/textAppearanceMedium"/>
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Inside Fragment"
+            android:padding="8dip"
+            android:id="@+id/configuration_inside_fragment"
+            android:textAppearance="?android:attr/textAppearanceMedium"/>
+
     </LinearLayout>
 
 </ScrollView>
