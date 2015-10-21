@@ -13,8 +13,12 @@ This library encapsulates scrolling logic when implementing *scrolling tabs* (ho
 compile 'ru.noties:scrollable:x.x.x'
 ```
 
+## What's new (1.1.3)
+* Another change to Scroller (API 23 compatible)
+* Improved ClosUpAlgo firing logic
 
-## What's new (1.1.2)
+
+### What's new (1.1.2)
 * Bundled with own Scroller implementation to be independent of device's Scroller
 
 
