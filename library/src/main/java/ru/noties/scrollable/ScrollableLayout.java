@@ -129,6 +129,8 @@ public class ScrollableLayout extends FrameLayout {
     private boolean mSelfUpdateScroll;
     private boolean mSelfUpdateFling;
 
+    private boolean mIsTouchOngoing;
+
     private CloseUpIdleAnimationTime mCloseUpIdleAnimationTime;
     private CloseUpAnimatorConfigurator mCloseAnimatorConfigurator;
 
@@ -301,7 +303,7 @@ public class ScrollableLayout extends FrameLayout {
 
         if (mCloseUpAlgorithm != null) {
             removeCallbacks(mIdleRunnable);
-            if (!mSelfUpdateScroll && changed) {
+            if (!mSelfUpdateScroll && changed && !mIsTouchOngoing) {
                 postDelayed(mIdleRunnable, mConsiderIdleMillis);
             }
         }
@@ -421,6 +423,7 @@ public class ScrollableLayout extends FrameLayout {
         final int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
 
+            mIsTouchOngoing = true;
             mScroller.abortAnimation();
 
             if (mDraggableView != null && mDraggableView.getGlobalVisibleRect(mDraggableRect)) {
@@ -429,6 +432,16 @@ public class ScrollableLayout extends FrameLayout {
                 mIsDraggingDraggable = mDraggableRect.contains(x, y);
             } else {
                 mIsDraggingDraggable = false;
+            }
+        } else if (action == MotionEvent.ACTION_UP
+                || action == MotionEvent.ACTION_CANCEL){
+
+
+            mIsTouchOngoing = false;
+
+            if (mCloseUpAlgorithm != null) {
+                removeCallbacks(mIdleRunnable);
+                postDelayed(mIdleRunnable, mConsiderIdleMillis);
             }
         }
 
