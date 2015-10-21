@@ -1,16 +1,31 @@
+/*
+ * Copyright (C) 2006 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package ru.noties.scrollable;
 
 import android.content.Context;
 import android.hardware.SensorManager;
-import android.os.Build;
-import android.util.FloatMath;
 import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 
+
 /**
- * <p>This class encapsulates scrolling. You can use scrollers ({@link android.widget.Scroller}
- * or {@link android.widget.OverScroller}) to collect the data you need to produce a scrolling
+ * <p>This class encapsulates scrolling. You can use scrollers ({Scroller}
+ * or {OverScroller}) to collect the data you need to produce a scrolling
  * animation&mdash;for example, in response to a fling gesture. Scrollers track
  * scroll offsets for you over time, but they don't automatically apply those
  * positions to your view. It's your responsibility to get and apply new
@@ -74,7 +89,6 @@ public class ScrollableScroller  {
 
     private float mFlingFriction = ViewConfiguration.getScrollFriction();
 
-    private static final int DEFAULT_DURATION = 250;
     private static final int SCROLL_MODE = 0;
     private static final int FLING_MODE = 1;
 
@@ -87,7 +101,6 @@ public class ScrollableScroller  {
 
     private static final int NB_SAMPLES = 100;
     private static final float[] SPLINE_POSITION = new float[NB_SAMPLES + 1];
-    private static final float[] SPLINE_TIME = new float[NB_SAMPLES + 1];
 
     private float mDeceleration;
     private final float mPpi;
@@ -123,26 +136,8 @@ public class ScrollableScroller  {
                 if (dy > alpha) y_max = y;
                 else y_min = y;
             }
-            SPLINE_TIME[i] = coef * ((1.0f - y) * P1 + y * P2) + y * y * y;
         }
-        SPLINE_POSITION[NB_SAMPLES] = SPLINE_TIME[NB_SAMPLES] = 1.0f;
-    }
-
-    /**
-     * Create a Scroller with the default duration and interpolator.
-     */
-    public ScrollableScroller(Context context) {
-        this(context, null);
-    }
-
-    /**
-     * Create a Scroller with the specified interpolator. If the interpolator is
-     * null, the default (viscous) interpolator will be used. "Flywheel" behavior will
-     * be in effect for apps targeting Honeycomb or newer.
-     */
-    public ScrollableScroller(Context context, Interpolator interpolator) {
-        this(context, interpolator,
-                context.getApplicationInfo().targetSdkVersion >= Build.VERSION_CODES.HONEYCOMB);
+        SPLINE_POSITION[NB_SAMPLES] = 1.0f;
     }
 
     /**
@@ -184,40 +179,12 @@ public class ScrollableScroller  {
     }
 
     /**
-     *
-     * Returns whether the scroller has finished scrolling.
-     *
-     * @return True if the scroller has finished scrolling, false otherwise.
-     */
-    public final boolean isFinished() {
-        return mFinished;
-    }
-
-    /**
-     * Force the finished field to a particular value.
-     *
-     * @param finished The new finished value.
-     */
-    public final void forceFinished(boolean finished) {
-        mFinished = finished;
-    }
-
-    /**
      * Returns how long the scroll event will take, in milliseconds.
      *
      * @return The duration of the scroll in milliseconds.
      */
     public final int getDuration() {
         return mDuration;
-    }
-
-    /**
-     * Returns the current X offset in the scroll.
-     *
-     * @return The new X offset as an absolute distance from the origin.
-     */
-    public final int getCurrX() {
-        return mCurrX;
     }
 
     /**
@@ -238,33 +205,6 @@ public class ScrollableScroller  {
     public float getCurrVelocity() {
         return mMode == FLING_MODE ?
                 mCurrVelocity : mVelocity - mDeceleration * timePassed() / 2000.0f;
-    }
-
-    /**
-     * Returns the start X offset in the scroll.
-     *
-     * @return The start X offset as an absolute distance from the origin.
-     */
-    public final int getStartX() {
-        return mStartX;
-    }
-
-    /**
-     * Returns the start Y offset in the scroll.
-     *
-     * @return The start Y offset as an absolute distance from the origin.
-     */
-    public final int getStartY() {
-        return mStartY;
-    }
-
-    /**
-     * Returns where the scroll will end. Valid only for "fling" scrolls.
-     *
-     * @return The final X offset as an absolute distance from the origin.
-     */
-    public final int getFinalX() {
-        return mFinalX;
     }
 
     /**
@@ -336,52 +276,6 @@ public class ScrollableScroller  {
     }
 
     /**
-     * Start scrolling by providing a starting point and the distance to travel.
-     * The scroll will use the default value of 250 milliseconds for the
-     * duration.
-     *
-     * @param startX Starting horizontal scroll offset in pixels. Positive
-     *        numbers will scroll the content to the left.
-     * @param startY Starting vertical scroll offset in pixels. Positive numbers
-     *        will scroll the content up.
-     * @param dx Horizontal distance to travel. Positive numbers will scroll the
-     *        content to the left.
-     * @param dy Vertical distance to travel. Positive numbers will scroll the
-     *        content up.
-     */
-    public void startScroll(int startX, int startY, int dx, int dy) {
-        startScroll(startX, startY, dx, dy, DEFAULT_DURATION);
-    }
-
-    /**
-     * Start scrolling by providing a starting point, the distance to travel,
-     * and the duration of the scroll.
-     *
-     * @param startX Starting horizontal scroll offset in pixels. Positive
-     *        numbers will scroll the content to the left.
-     * @param startY Starting vertical scroll offset in pixels. Positive numbers
-     *        will scroll the content up.
-     * @param dx Horizontal distance to travel. Positive numbers will scroll the
-     *        content to the left.
-     * @param dy Vertical distance to travel. Positive numbers will scroll the
-     *        content up.
-     * @param duration Duration of the scroll in milliseconds.
-     */
-    public void startScroll(int startX, int startY, int dx, int dy, int duration) {
-        mMode = SCROLL_MODE;
-        mFinished = false;
-        mDuration = duration;
-        mStartTime = AnimationUtils.currentAnimationTimeMillis();
-        mStartX = startX;
-        mStartY = startY;
-        mFinalX = startX + dx;
-        mFinalY = startY + dy;
-        mDeltaX = dx;
-        mDeltaY = dy;
-        mDurationReciprocal = 1.0f / (float) mDuration;
-    }
-
-    /**
      * Start scrolling based on a fling gesture. The distance travelled will
      * depend on the initial velocity of the fling.
      *
@@ -408,7 +302,7 @@ public class ScrollableScroller  {
 
             float dx = (float) (mFinalX - mStartX);
             float dy = (float) (mFinalY - mStartY);
-            float hyp = FloatMath.sqrt(dx * dx + dy * dy);
+            float hyp = (float) Math.hypot(dx, dy);
 
             float ndx = dx / hyp;
             float ndy = dy / hyp;
@@ -425,7 +319,7 @@ public class ScrollableScroller  {
         mMode = FLING_MODE;
         mFinished = false;
 
-        float velocity = FloatMath.sqrt(velocityX * velocityX + velocityY * velocityY);
+        float velocity = (float) Math.hypot(velocityX, velocityY);
 
         mVelocity = velocity;
         mDuration = getSplineFlingDuration(velocity);
@@ -472,31 +366,16 @@ public class ScrollableScroller  {
     }
 
     /**
-     * Stops the animation. Contrary to {@link #forceFinished(boolean)},
+     * Stops the animation. Contrary to {forceFinished(boolean)},
      * aborting the animating cause the scroller to move to the final x and y
      * position
      *
-     * @see #forceFinished(boolean)
+     * forceFinished(boolean)
      */
     public void abortAnimation() {
         mCurrX = mFinalX;
         mCurrY = mFinalY;
         mFinished = true;
-    }
-
-    /**
-     * Extend the scroll animation. This allows a running animation to scroll
-     * further and longer, when used with {@link #setFinalX(int)} or {@link #setFinalY(int)}.
-     *
-     * @param extend Additional time to scroll in milliseconds.
-     * @see #setFinalX(int)
-     * @see #setFinalY(int)
-     */
-    public void extendDuration(int extend) {
-        int passed = timePassed();
-        mDuration = passed + extend;
-        mDurationReciprocal = 1.0f / mDuration;
-        mFinished = false;
     }
 
     /**
@@ -509,24 +388,11 @@ public class ScrollableScroller  {
     }
 
     /**
-     * Sets the final position (X) for this scroller.
-     *
-     * @param newX The new X offset as an absolute distance from the origin.
-     * @see #extendDuration(int)
-     * @see #setFinalY(int)
-     */
-    public void setFinalX(int newX) {
-        mFinalX = newX;
-        mDeltaX = mFinalX - mStartX;
-        mFinished = false;
-    }
-
-    /**
      * Sets the final position (Y) for this scroller.
      *
      * @param newY The new Y offset as an absolute distance from the origin.
-     * @see #extendDuration(int)
-     * @see #setFinalX(int)
+     * extendDuration(int)
+     * setFinalX(int)
      */
     public void setFinalY(int newY) {
         mFinalY = newY;
@@ -534,10 +400,6 @@ public class ScrollableScroller  {
         mFinished = false;
     }
 
-    public boolean isScrollingInDirection(float xvel, float yvel) {
-        return !mFinished && Math.signum(xvel) == Math.signum(mFinalX - mStartX) &&
-                Math.signum(yvel) == Math.signum(mFinalY - mStartY);
-    }
 
     static class ViscousFluidInterpolator implements Interpolator {
         /** Controls the viscous fluid effect (how much of it). */
