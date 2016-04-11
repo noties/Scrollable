@@ -24,7 +24,7 @@ public class RecyclerViewFragment extends BaseFragment {
         return fragment;
     }
 
-    private RecyclerView mRecyclerView;
+    private static RecyclerView mRecyclerView; // must be static
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {

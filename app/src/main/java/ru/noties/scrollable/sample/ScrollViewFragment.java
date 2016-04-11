@@ -23,7 +23,7 @@ public class ScrollViewFragment extends BaseFragment {
         return fragment;
     }
 
-    private ScrollView mScrollView;
+    private static ScrollView mScrollView; // must be static
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {
