@@ -445,9 +445,15 @@ public class ScrollableLayout extends FrameLayout {
     @Override
     public boolean dispatchTouchEvent(@SuppressWarnings("NullableProblems") MotionEvent event) {
 
-//        if (mSelfUpdateScroll) {
-//            return super.dispatchTouchEvent(event);
-//        }
+        if (mSelfUpdateScroll) {
+            mIsTouchOngoing = false;
+            mIsDraggingDraggable = false;
+            mIsScrolling = false;
+            mIsFlinging = false;
+            removeCallbacks(mIdleRunnable);
+            removeCallbacks(mScrollRunnable);
+            return super.dispatchTouchEvent(event);
+        }
 
         final int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
@@ -464,7 +470,6 @@ public class ScrollableLayout extends FrameLayout {
             }
         } else if (action == MotionEvent.ACTION_UP
                 || action == MotionEvent.ACTION_CANCEL){
-
 
             mIsTouchOngoing = false;
 
