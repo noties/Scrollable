@@ -2,7 +2,9 @@ package ru.noties.scrollable;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.animation.FloatEvaluator;
 import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Rect;
@@ -17,6 +19,9 @@ import android.view.ViewConfiguration;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
+
+import ru.noties.debug.Debug;
+import ru.noties.debug.out.AndroidLogDebugOutput;
 
 /**
  * <p>
@@ -159,6 +164,8 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     private void init(Context context, AttributeSet attributeSet) {
+
+        Debug.init(new AndroidLogDebugOutput(true));
 
         final TypedArray array = context.obtainStyledAttributes(attributeSet, R.styleable.ScrollableLayout);
         try {
@@ -351,6 +358,24 @@ public class ScrollableLayout extends FrameLayout {
         this.mCloseAnimatorConfigurator = configurator;
     }
 
+    public ValueAnimator animateScroll(final int scrollY) {
+
+        final int startY = getScrollY();
+        final int diff = scrollY - startY;
+
+        final ValueAnimator animator = ValueAnimator.ofFloat(.0F, 1.F);
+        animator.setEvaluator(new FloatEvaluator());
+        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                final float fraction = animation.getAnimatedFraction();
+                scrollTo(0, startY + (int) (diff * fraction + .5F));
+            }
+        });
+        animator.addListener(new SelfUpdateAnimationListener());
+        return animator;
+    }
+
     /**
      * @see View#scrollTo(int, int)
      * @see #setCanScrollVerticallyDelegate(CanScrollVerticallyDelegate)
@@ -419,6 +444,10 @@ public class ScrollableLayout extends FrameLayout {
 
     @Override
     public boolean dispatchTouchEvent(@SuppressWarnings("NullableProblems") MotionEvent event) {
+
+//        if (mSelfUpdateScroll) {
+//            return super.dispatchTouchEvent(event);
+//        }
 
         final int action = event.getActionMasked();
         if (action == MotionEvent.ACTION_DOWN) {
@@ -570,23 +599,7 @@ public class ScrollableLayout extends FrameLayout {
                     : DEFAULT_IDLE_CLOSE_UP_ANIMATION;
 
             mCloseUpAnimator.setDuration(duration);
-            mCloseUpAnimator.addListener(new AnimatorListenerAdapter() {
-
-                @Override
-                public void onAnimationStart(Animator animation) {
-                    mSelfUpdateScroll = true;
-                }
-
-                @Override
-                public void onAnimationEnd(Animator animation) {
-                    mSelfUpdateScroll = false;
-                }
-
-                @Override
-                public void onAnimationCancel(Animator animation) {
-                    mSelfUpdateScroll = false;
-                }
-            });
+            mCloseUpAnimator.addListener(new SelfUpdateAnimationListener());
 
             if (mCloseAnimatorConfigurator != null) {
                 mCloseAnimatorConfigurator.configure(mCloseUpAnimator);
@@ -719,6 +732,25 @@ public class ScrollableLayout extends FrameLayout {
             layout.setScrollY(value);
         }
     };
+
+    private class SelfUpdateAnimationListener extends AnimatorListenerAdapter {
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+            mSelfUpdateScroll = true;
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            mSelfUpdateScroll = false;
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            mSelfUpdateScroll = false;
+        }
+
+    }
 
     @Override
     public Parcelable onSaveInstanceState() {

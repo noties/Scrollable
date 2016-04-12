@@ -1,16 +1,17 @@
 package ru.noties.scrollable.sample;
 
+import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 
 import java.util.Arrays;
@@ -70,38 +71,48 @@ public class ScrollableFragment extends Fragment {
             }
         });
 
+        scrollableLayout.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                final ValueAnimator animator = scrollableLayout.animateScroll(0);
+                animator.setDuration(5000L);
+                animator.setInterpolator(new AccelerateDecelerateInterpolator());
+                animator.start();
+            }
+        }, 2000L);
+
         final HeaderPagerAdapter headerPagerAdapter = new HeaderPagerAdapter(getChildFragmentManager(), 20);
         header.setAdapter(headerPagerAdapter);
 
         return view;
     }
 
-private List<BaseFragment> fragments() {
+    private List<BaseFragment> fragments() {
 
-    final FragmentManager manager = getChildFragmentManager();
+        final FragmentManager manager = getChildFragmentManager();
 
-    final BaseFragment list;
-    {
-        final Fragment fragment = manager.findFragmentByTag(ListViewFragment.TAG);
-        if (fragment == null) {
-            list = ListViewFragment.newInstance(0x80FF0000);
-        } else {
-            list = (ListViewFragment) fragment;
+        final BaseFragment list;
+        {
+            final Fragment fragment = manager.findFragmentByTag(ListViewFragment.TAG);
+            if (fragment == null) {
+                list = ListViewFragment.newInstance(0x80FF0000);
+            } else {
+                list = (ListViewFragment) fragment;
+            }
         }
-    }
 
-    final BaseFragment recycler;
-    {
-        final Fragment fragment = manager.findFragmentByTag(RecyclerViewFragment.TAG);
-        if (fragment == null) {
-            recycler = RecyclerViewFragment.newInstance(0x8000FF00);
-        } else {
-            recycler = (RecyclerViewFragment) fragment;
+        final BaseFragment recycler;
+        {
+            final Fragment fragment = manager.findFragmentByTag(RecyclerViewFragment.TAG);
+            if (fragment == null) {
+                recycler = RecyclerViewFragment.newInstance(0x8000FF00);
+            } else {
+                recycler = (RecyclerViewFragment) fragment;
+            }
         }
-    }
 
-    return Arrays.asList(list, recycler);
-}
+        return Arrays.asList(list, recycler);
+    }
 
     protected <V> V findView(View view, @IdRes int id) {
         //noinspection unchecked
