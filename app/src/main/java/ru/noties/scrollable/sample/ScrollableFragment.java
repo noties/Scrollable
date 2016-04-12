@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ListFragment;
 import android.support.v4.view.ViewPager;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -13,6 +14,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.Arrays;
+import java.util.List;
 
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnScrollChangedListener;
@@ -34,7 +36,7 @@ public class ScrollableFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {
         final View view = inflater.inflate(R.layout.fragment_scrollable, parent, false);
-        ScrollableLayout scrollableLayout = findView(view, R.id.scrollable_layout);
+        final ScrollableLayout scrollableLayout = findView(view, R.id.scrollable_layout);
         final ViewPager header = findView(view, R.id.header_view_pager);
         final ViewPager pager = findView(view, R.id.view_pager);
         final TabsLayout tabsLayout = findView(view, R.id.tabs);
@@ -42,7 +44,7 @@ public class ScrollableFragment extends Fragment {
         final ViewPagerAdapter adapter = new ViewPagerAdapter(
                 getChildFragmentManager(),
                 getResources(),
-                Arrays.asList(ListViewFragment.newInstance(0x80FF0000), RecyclerViewFragment.newInstance(0x8000FF00))
+                fragments()
         );
         pager.setAdapter(adapter);
         tabsLayout.setViewPager(pager);
@@ -73,6 +75,33 @@ public class ScrollableFragment extends Fragment {
 
         return view;
     }
+
+private List<BaseFragment> fragments() {
+
+    final FragmentManager manager = getChildFragmentManager();
+
+    final BaseFragment list;
+    {
+        final Fragment fragment = manager.findFragmentByTag(ListViewFragment.TAG);
+        if (fragment == null) {
+            list = ListViewFragment.newInstance(0x80FF0000);
+        } else {
+            list = (ListViewFragment) fragment;
+        }
+    }
+
+    final BaseFragment recycler;
+    {
+        final Fragment fragment = manager.findFragmentByTag(RecyclerViewFragment.TAG);
+        if (fragment == null) {
+            recycler = RecyclerViewFragment.newInstance(0x8000FF00);
+        } else {
+            recycler = (RecyclerViewFragment) fragment;
+        }
+    }
+
+    return Arrays.asList(list, recycler);
+}
 
     protected <V> V findView(View view, @IdRes int id) {
         //noinspection unchecked

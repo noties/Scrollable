@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
 
-    compileSdkVersion 23
-    buildToolsVersion "23.0.1"
+    compileSdkVersion TARGET_SDK as int
+    buildToolsVersion BUILD_TOOLS_VERSION
 
     defaultConfig {
         applicationId "ru.noties.scrollable.sample"
-        minSdkVersion 14
-        targetSdkVersion 23
+        minSdkVersion MIN_SDK as int
+        targetSdkVersion TARGET_SDK as int
         versionCode 1
         versionName "1.0"
 
