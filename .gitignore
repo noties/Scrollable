@@ -29,9 +29,6 @@ build/
 # Local configuration file (sdk path, etc)
 local.properties
 
-# gradle properties with signing config
-gradle.properties
-
 # Project configuration file (target-sdk-version)
 .DS_Store
 project.properties
