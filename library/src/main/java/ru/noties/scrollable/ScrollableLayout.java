@@ -326,11 +326,20 @@ public class ScrollableLayout extends FrameLayout {
         }
     }
 
-    protected void setSelfUpdateScroll(boolean value) {
+    /**
+     * Call this method to enable/disable scrolling logic. If called with `value=false`
+     * ScrollableLayout won't process any touch events
+     * @param value indicating whether or not ScrollableLayout should process touch events
+     */
+    public void setSelfUpdateScroll(boolean value) {
         mSelfUpdateScroll = value;
     }
 
-    protected boolean isSelfUpdateScroll() {
+    /**
+     * @see #setSelfUpdateScroll(boolean)
+     * @return current value of `mSelfUpdateScroll`
+     */
+    public boolean isSelfUpdateScroll() {
         return mSelfUpdateScroll;
     }
 
@@ -368,6 +377,14 @@ public class ScrollableLayout extends FrameLayout {
         this.mCloseAnimatorConfigurator = configurator;
     }
 
+    /**
+     * Helper method to animate scroll state of ScrollableLayout.
+     * Please note, that returned {@link ValueAnimator} is not fully configured -
+     * it needs at least `duration` property.
+     * Also, there is no checks if the current scrollY is equal to the requested one.
+     * @param scrollY the final scroll y to animate to
+     * @return {@link ValueAnimator} configured to animate scroll state
+     */
     public ValueAnimator animateScroll(final int scrollY) {
 
         final int startY = getScrollY();
@@ -742,7 +759,6 @@ public class ScrollableLayout extends FrameLayout {
                 if (mScrollableContinueY > 0) {
                     mScrollableContinueYStartedMillis = System.currentTimeMillis();
                     mScrollableContinueYDuration = duration;
-//                    Debug.i("y: %d, velocity: %s, duration: %d, durationNow: %d", mScrollableContinueY, velocityY, duration, mScroller.getSplineFlingDuration(velocityY));
                 }
 
                 final int newY = getNewY(finalY);

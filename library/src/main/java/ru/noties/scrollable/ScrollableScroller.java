@@ -353,7 +353,7 @@ public class ScrollableScroller  {
         return Math.log(INFLEXION * Math.abs(velocity) / (mFlingFriction * mPhysicalCoeff));
     }
 
-    int getSplineFlingDuration(float velocity) {
+    /*private*/ int getSplineFlingDuration(float velocity) {
         final double l = getSplineDeceleration(velocity);
         final double decelMinusOne = DECELERATION_RATE - 1.0;
         return (int) (1000.0 * Math.exp(l / decelMinusOne));

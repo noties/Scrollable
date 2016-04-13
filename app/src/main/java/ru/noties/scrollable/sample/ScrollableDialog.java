@@ -15,6 +15,7 @@ import android.widget.ListView;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.CloseUpAlgorithm;
 import ru.noties.scrollable.DefaultCloseUpAlgorithm;
+import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 
@@ -80,6 +81,12 @@ public class ScrollableDialog extends DialogFragment {
             @Override
             public boolean canScrollVertically(int direction) {
                 return listView.canScrollVertically(direction);
+            }
+        });
+        scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
+            @Override
+            public void onFlingOver(int y, long duration) {
+                listView.smoothScrollBy(y, (int) duration);
             }
         });
 
