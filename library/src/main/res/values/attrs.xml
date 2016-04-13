@@ -10,6 +10,9 @@
 
         <attr name="scrollable_closeUpAnimationMillis" format="integer" />
         <attr name="scrollable_closeUpAnimatorInterpolator" format="reference" />
+        
+        <attr name="scrollable_autoMaxScroll"       format="boolean" />
+        <attr name="scrollable_autoMaxScrollViewId" format="reference" />
     </declare-styleable>
 
 </resources>

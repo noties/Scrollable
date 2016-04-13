@@ -16,6 +16,7 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.ViewTreeObserver;
 import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
@@ -154,6 +155,10 @@ public class ScrollableLayout extends FrameLayout {
 
     private OnFlingOverListener mOnFlingOverListener;
 
+    private boolean mAutoMaxScroll;
+    private ViewTreeObserver.OnGlobalLayoutListener mAutoMaxScrollYLayoutListener;
+    private int mAutoMaxScrollViewId;
+
     public ScrollableLayout(Context context) {
         super(context);
         init(context, null);
@@ -185,6 +190,8 @@ public class ScrollableLayout extends FrameLayout {
             }
 
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
+            mAutoMaxScroll = array.getBoolean(R.styleable.ScrollableLayout_scrollable_autoMaxScroll, mMaxScrollY == 0);
+            mAutoMaxScrollViewId = array.getResourceId(R.styleable.ScrollableLayout_scrollable_autoMaxScrollViewId, 0);
 
             final long considerIdleMillis = array.getInteger(
                     R.styleable.ScrollableLayout_scrollable_considerIdleMillis,
@@ -223,6 +230,15 @@ public class ScrollableLayout extends FrameLayout {
                 ScrollableLayout.super.dispatchTouchEvent(event);
             }
         });
+    }
+
+    @Override
+    protected void onFinishInflate() {
+        super.onFinishInflate();
+
+        if (mAutoMaxScroll) {
+            processAutoMaxScroll(true);
+        }
     }
 
     /**
@@ -418,6 +434,61 @@ public class ScrollableLayout extends FrameLayout {
         }
 
         super.scrollTo(0, newY);
+    }
+
+    /**
+     * If set to true then ScrollableLayout will listen for global layout change of a view with
+     * is passed through xml: scrollable_autoMaxScrollViewId OR first view in layout.
+     * With this feature no need to specify `scrollable_maxScrollY` attribute
+     * @param autoMaxScroll to listen for child view height & change mMaxScrollY accordingly
+     */
+    public void setAutoMaxScroll(boolean autoMaxScroll) {
+        mAutoMaxScroll = autoMaxScroll;
+        processAutoMaxScroll(mAutoMaxScroll);
+    }
+
+    /**
+     * @see #setAutoMaxScroll(boolean)
+     * @return `mAutoMaxScroll` value
+     */
+    public boolean isAutoMaxScroll() {
+        return mAutoMaxScroll;
+    }
+
+    protected void processAutoMaxScroll(boolean autoMaxScroll) {
+
+        if (getChildCount() == 0) {
+            return;
+        }
+
+        final View view;
+        if (mAutoMaxScrollViewId != 0) {
+            view = findViewById(mAutoMaxScrollViewId);
+        } else {
+            view = getChildAt(0);
+        }
+
+        if (view == null) {
+            return;
+        }
+
+        if (!autoMaxScroll) {
+            if (mAutoMaxScrollYLayoutListener != null) {
+                ViewUtils.removeGlobalLayoutListener(view, mAutoMaxScrollYLayoutListener);
+                mAutoMaxScrollYLayoutListener = null;
+            }
+        } else {
+            // if it's not null, we have already set it
+            if (mAutoMaxScrollYLayoutListener == null) {
+                mAutoMaxScrollYLayoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
+                    @Override
+                    public void onGlobalLayout() {
+                        mMaxScrollY = view.getMeasuredHeight();
+                    }
+                };
+                view.getViewTreeObserver().addOnGlobalLayoutListener(mAutoMaxScrollYLayoutListener);
+            }
+        }
     }
 
     protected int getNewY(int y) {
