@@ -55,4 +55,11 @@ public class RecyclerViewFragment extends BaseFragment {
     public boolean canScrollVertically(int direction) {
         return mRecyclerView != null && mRecyclerView.canScrollVertically(direction);
     }
+
+    @Override
+    public void onFlingOver(int y, long duration) {
+        if (mRecyclerView != null) {
+            mRecyclerView.smoothScrollBy(0, y);
+        }
+    }
 }

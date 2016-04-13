@@ -11,6 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
+import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 
@@ -41,6 +42,12 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
             @Override
             public boolean canScrollVertically(int direction) {
                 return adapter.canScrollVertically(viewPager.getCurrentItem(), direction);
+            }
+        });
+        mScrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
+            @Override
+            public void onFlingOver(int y, long duration) {
+                adapter.getItem(viewPager.getCurrentItem()).onFlingOver(y, duration);
             }
         });
 

@@ -148,6 +148,12 @@ public class ScrollableLayout extends FrameLayout {
 
     private long mConsiderIdleMillis;
 
+    private int mScrollableContinueY;
+    private long mScrollableContinueYStartedMillis;
+    private long mScrollableContinueYDuration;
+
+    private OnFlingOverListener mOnFlingOverListener;
+
     public ScrollableLayout(Context context) {
         super(context);
         init(context, null);
@@ -292,6 +298,10 @@ public class ScrollableLayout extends FrameLayout {
      */
     public void setOnScrollChangedListener(OnScrollChangedListener listener) {
         this.mOnScrollChangedListener = listener;
+    }
+
+    public void setOnFlingOverListener(OnFlingOverListener onFlingOverListener) {
+        this.mOnFlingOverListener = onFlingOverListener;
     }
 
     /**
@@ -567,6 +577,15 @@ public class ScrollableLayout extends FrameLayout {
 
                 if (diff != 0) {
                     scrollBy(0, diff);
+                } else {
+                    if (mOnFlingOverListener != null) {
+                        if (mScrollableContinueY > 0) {
+                            final long duration
+                                    = mScrollableContinueYDuration - (System.currentTimeMillis() - mScrollableContinueYStartedMillis);
+                            mOnFlingOverListener.onFlingOver(mScrollableContinueY, duration);
+                            mScrollableContinueY = 0;
+                        }
+                    }
                 }
 
                 post(this);
@@ -670,6 +689,20 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
+            final int maxPossibleFinalY;
+            final int duration;
+            if (mOnFlingOverListener != null) {
+                // we will pass Integer.MAX_VALUE to calculate the maximum possible fling
+                mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, Integer.MAX_VALUE);
+                maxPossibleFinalY = mScroller.getFinalY();
+                duration = mScroller.getSplineFlingDuration(velocityY);
+
+                mScroller.abortAnimation();
+            } else {
+                maxPossibleFinalY = 0;
+                duration = 0;
+            }
+
             mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, mMaxScrollY);
 
             if (mScroller.computeScrollOffset()) {
@@ -695,9 +728,28 @@ public class ScrollableLayout extends FrameLayout {
                     mScroller.setFinalY(finalY);
                 }
 
+                final int scrollableContinueY;
+                if (maxPossibleFinalY > 0) {
+                    if (maxPossibleFinalY > mMaxScrollY) {
+                        scrollableContinueY = maxPossibleFinalY - mMaxScrollY;
+                    } else {
+                        scrollableContinueY = 0;
+                    }
+                } else {
+                    scrollableContinueY = 0;
+                }
+                mScrollableContinueY = scrollableContinueY;
+                if (mScrollableContinueY > 0) {
+                    mScrollableContinueYStartedMillis = System.currentTimeMillis();
+                    mScrollableContinueYDuration = duration;
+//                    Debug.i("y: %d, velocity: %s, duration: %d, durationNow: %d", mScrollableContinueY, velocityY, duration, mScroller.getSplineFlingDuration(velocityY));
+                }
+
                 final int newY = getNewY(finalY);
 
                 return !(finalY == nowY || newY < 0);
+            } else {
+                mScrollableContinueY = 0;
             }
 
             return false;

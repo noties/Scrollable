@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
+import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 
@@ -68,6 +69,12 @@ public class ScrollableFragment extends Fragment {
                 tabsLayout.setTranslationY(tabsTranslationY);
 
                 header.setTranslationY(y / 2);
+            }
+        });
+        scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
+            @Override
+            public void onFlingOver(int y, long duration) {
+                adapter.getItem(pager.getCurrentItem()).onFlingOver(y, duration);
             }
         });
 

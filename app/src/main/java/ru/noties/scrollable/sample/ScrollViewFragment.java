@@ -52,4 +52,11 @@ public class ScrollViewFragment extends BaseFragment {
     public boolean canScrollVertically(int direction) {
         return mScrollView != null && mScrollView.canScrollVertically(direction);
     }
+
+    @Override
+    public void onFlingOver(int y, long duration) {
+        if (mScrollView != null) {
+            mScrollView.smoothScrollBy(0, y);
+        }
+    }
 }

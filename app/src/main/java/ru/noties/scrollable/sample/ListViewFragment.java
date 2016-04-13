@@ -59,4 +59,11 @@ public class ListViewFragment extends BaseFragment {
     public boolean canScrollVertically(int direction) {
         return mListView != null && mListView.canScrollVertically(direction);
     }
+
+    @Override
+    public void onFlingOver(int y, long duration) {
+        if (mListView != null) {
+            mListView.smoothScrollBy(y, (int) duration);
+        }
+    }
 }

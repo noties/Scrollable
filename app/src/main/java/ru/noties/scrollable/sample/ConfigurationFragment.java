@@ -99,6 +99,13 @@ public class ConfigurationFragment extends BaseFragment {
         return TAG;
     }
 
+    @Override
+    public void onFlingOver(int y, long duration) {
+        if (mScrollView != null) {
+            mScrollView.smoothScrollBy(0, y);
+        }
+    }
+
     private static class SeekBarHelper {
 
         static final float MIN      = BuildConfig.MIN_FRICTION;
