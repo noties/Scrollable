@@ -435,7 +435,7 @@ public class ScrollableLayout extends FrameLayout {
      * If set to true then ScrollableLayout will listen for global layout change of a view with
      * is passed through xml: scrollable_autoMaxScrollViewId OR first view in layout.
      * With this feature no need to specify `scrollable_maxScrollY` attribute
-     * @param autoMaxScroll to listen for child view height & change mMaxScrollY accordingly
+     * @param autoMaxScroll to listen for child view height and change mMaxScrollY accordingly
      */
     public void setAutoMaxScroll(boolean autoMaxScroll) {
         mAutoMaxScroll = autoMaxScroll;
