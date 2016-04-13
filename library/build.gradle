@@ -11,8 +11,8 @@ android {
     defaultConfig {
         minSdkVersion MIN_SDK as int
         targetSdkVersion TARGET_SDK as int
-        versionCode 5
-        versionName "1.1.3"
+        versionCode VERSION_CODE as int
+        versionName VERSION_NAME
     }
 
     buildTypes {
@@ -43,7 +43,7 @@ android.libraryVariants.all { variant ->
 
 dependencies {
     // used for debugging
-    compile 'ru.noties:debug:2.0.2@jar'
+//    compile 'ru.noties:debug:2.0.2@jar'
 }
 
 // for releasing

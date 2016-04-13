@@ -21,9 +21,6 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import ru.noties.debug.Debug;
-import ru.noties.debug.out.AndroidLogDebugOutput;
-
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -175,8 +172,6 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     private void init(Context context, AttributeSet attributeSet) {
-
-        Debug.init(new AndroidLogDebugOutput(true));
 
         final TypedArray array = context.obtainStyledAttributes(attributeSet, R.styleable.ScrollableLayout);
         try {
