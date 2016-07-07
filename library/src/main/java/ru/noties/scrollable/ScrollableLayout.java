@@ -320,7 +320,7 @@ public class ScrollableLayout extends FrameLayout {
         this.mOnScrollChangedListeners.add(listener);
     }
 
-    public void removeOnScrollChangedListener(OnScrollChangedListener listener){
+    public void removeOnScrollChangedListener(OnScrollChangedListener listener) {
         this.mOnScrollChangedListeners.remove(listener);
     }
 
