@@ -51,7 +51,7 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
             }
         });
 
-        mScrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        mScrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
 

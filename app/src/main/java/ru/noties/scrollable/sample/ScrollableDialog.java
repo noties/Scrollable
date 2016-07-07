@@ -5,15 +5,12 @@ import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
 import android.widget.ListView;
 
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
-import ru.noties.scrollable.CloseUpAlgorithm;
 import ru.noties.scrollable.DefaultCloseUpAlgorithm;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
@@ -90,7 +87,7 @@ public class ScrollableDialog extends DialogFragment {
             }
         });
 
-        scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        scrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
 

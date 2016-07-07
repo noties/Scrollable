@@ -56,7 +56,7 @@ public class ScrollableFragment extends Fragment {
                 return adapter.canScrollVertically(pager.getCurrentItem(), direction);
             }
         });
-        scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        scrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
                 final float tabsTranslationY;
