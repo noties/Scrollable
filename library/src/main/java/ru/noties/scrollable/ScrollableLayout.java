@@ -21,6 +21,9 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -31,7 +34,7 @@ import android.widget.FrameLayout;
  * Note, that this ViewGroup will layout it's children as if it were an ordinary {@link android.widget.LinearLayout}
  * with orientation set to {@link android.widget.LinearLayout#VERTICAL}.
  * No paddings or margins will affect the layout position of children,
-
+ * <p/>
  * although margins will certainly affect measurements.
  * </p>
  * <p>
@@ -53,7 +56,7 @@ import android.widget.FrameLayout;
  * <p>
  * Follow these steps to create your own Scrollable layout:
  * </p>
- *
+ * <p/>
  * <b>Simple case</b>
  * <pre>
  * {@code
@@ -73,10 +76,10 @@ import android.widget.FrameLayout;
  *     </ru.noties.scrollable.ScrollableLayout>
  * }
  * </pre>
- *
+ * <p/>
  * <b>Sticky case</b>
  * (of cause it's just an xml step, you also should implement translation logic in OnScrollChangeListener
- * {@link #setOnScrollChangedListener(OnScrollChangedListener)})
+ * {@link #addOnScrollChangedListener(OnScrollChangedListener)})
  * <pre>
  *     {@code
  *     <ru.noties.scrollable.ScrollableLayout
@@ -104,7 +107,7 @@ import android.widget.FrameLayout;
  *              android:layout_marginTop="@dimen/sticky_height" /> <!-- (!) -->
  *     }
  * </pre>
- *
+ * <p/>
  * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 28.03.2015.
  */
 public class ScrollableLayout extends FrameLayout {
@@ -117,7 +120,7 @@ public class ScrollableLayout extends FrameLayout {
     private GestureDetector mFlingDetector;
 
     private CanScrollVerticallyDelegate mCanScrollVerticallyDelegate;
-    private OnScrollChangedListener mOnScrollChangedListener;
+    private final List<OnScrollChangedListener> mOnScrollChangedListeners = new ArrayList<>();
 
     private int mMaxScrollY;
 
@@ -140,6 +143,7 @@ public class ScrollableLayout extends FrameLayout {
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
     private final Rect mDraggableRect;
+
     {
         mDraggableRect = new Rect();
     }
@@ -217,7 +221,7 @@ public class ScrollableLayout extends FrameLayout {
         setVerticalScrollBarEnabled(true);
 
         mScrollDetector = new GestureDetector(context, new ScrollGestureListener());
-        mFlingDetector  = new GestureDetector(context, new FlingGestureListener(context));
+        mFlingDetector = new GestureDetector(context, new FlingGestureListener(context));
 
         mMotionEventHook = new MotionEventHook(new MotionEventHookCallback() {
             @Override
@@ -238,9 +242,10 @@ public class ScrollableLayout extends FrameLayout {
 
     /**
      * Override this method if you wish to create own {@link android.widget.Scroller}
-     * @param context {@link android.content.Context}
+     *
+     * @param context      {@link android.content.Context}
      * @param interpolator {@link android.view.animation.Interpolator}, the default implementation passes <code>null</code>
-     * @param flywheel {@link android.widget.Scroller#Scroller(android.content.Context, android.view.animation.Interpolator, boolean)}
+     * @param flywheel     {@link android.widget.Scroller#Scroller(android.content.Context, android.view.animation.Interpolator, boolean)}
      * @return new instance of {@link android.widget.Scroller} must not bu null
      */
     protected ScrollableScroller initScroller(Context context, Interpolator interpolator, boolean flywheel) {
@@ -249,16 +254,17 @@ public class ScrollableLayout extends FrameLayout {
 
     /**
      * Sets friction for current {@link android.widget.Scroller}
-     * @see android.widget.Scroller#setFriction(float)
+     *
      * @param friction to be applied
+     * @see android.widget.Scroller#setFriction(float)
      */
     public void setFriction(float friction) {
         mScroller.setFriction(friction);
     }
 
     /**
-     * @see ru.noties.scrollable.CanScrollVerticallyDelegate
      * @param delegate which will be invoked when scroll state of scrollable children is needed
+     * @see ru.noties.scrollable.CanScrollVerticallyDelegate
      */
     public void setCanScrollVerticallyDelegate(CanScrollVerticallyDelegate delegate) {
         this.mCanScrollVerticallyDelegate = delegate;
@@ -266,6 +272,7 @@ public class ScrollableLayout extends FrameLayout {
 
     /**
      * Also can be set via xml attribute <code>scrollable_maxScroll</code>
+     *
      * @param maxY the max scroll y available for this View.
      * @see #getMaxScrollY()
      */
@@ -283,6 +290,7 @@ public class ScrollableLayout extends FrameLayout {
 
     /**
      * Note that this value might be set with xml definition (<pre>{@code app:scrollable_considerIdleMillis="100"}</pre>)
+     *
      * @param millis millis after which current scroll
      *               state would be considered idle and thus firing close up logic if set
      * @see #getConsiderIdleMillis()
@@ -304,11 +312,16 @@ public class ScrollableLayout extends FrameLayout {
      * Pass an {@link ru.noties.scrollable.OnScrollChangedListener}
      * if you wish to get notifications when scroll state of <code>this</code> View has changed.
      * It\'s helpful for implementing own logic which depends on scroll state (e.g. parallax, alpha, etc)
+     *
      * @param listener to be invoked when {@link #onScrollChanged(int, int, int, int)} has been called.
      *                 Might be <code>null</code> if you don\'t want to receive scroll notifications anymore
      */
-    public void setOnScrollChangedListener(OnScrollChangedListener listener) {
-        this.mOnScrollChangedListener = listener;
+    public void addOnScrollChangedListener(OnScrollChangedListener listener) {
+        this.mOnScrollChangedListeners.add(listener);
+    }
+
+    public void removeOnScrollChangedListener(OnScrollChangedListener listener){
+        this.mOnScrollChangedListeners.remove(listener);
     }
 
     public void setOnFlingOverListener(OnFlingOverListener onFlingOverListener) {
@@ -325,8 +338,10 @@ public class ScrollableLayout extends FrameLayout {
 
         final boolean changed = t != oldT;
 
-        if (changed && mOnScrollChangedListener != null) {
-            mOnScrollChangedListener.onScrollChanged(t, oldT, mMaxScrollY);
+        if (changed && !mOnScrollChangedListeners.isEmpty()) {
+            for (OnScrollChangedListener listener : mOnScrollChangedListeners) {
+                listener.onScrollChanged(t, oldT, mMaxScrollY);
+            }
         }
 
         if (mCloseUpAlgorithm != null) {
@@ -340,6 +355,7 @@ public class ScrollableLayout extends FrameLayout {
     /**
      * Call this method to enable/disable scrolling logic. If called with `value=false`
      * ScrollableLayout won't process any touch events
+     *
      * @param value indicating whether or not ScrollableLayout should process touch events
      */
     public void setSelfUpdateScroll(boolean value) {
@@ -347,8 +363,8 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     /**
-     * @see #setSelfUpdateScroll(boolean)
      * @return current value of `mSelfUpdateScroll`
+     * @see #setSelfUpdateScroll(boolean)
      */
     public boolean isSelfUpdateScroll() {
         return mSelfUpdateScroll;
@@ -357,6 +373,7 @@ public class ScrollableLayout extends FrameLayout {
     /**
      * Note that {@link DefaultCloseUpAlgorithm} might be set with
      * xml definition (<pre>{@code app:scrollable_defaultCloseUp="true"}</pre>)
+     *
      * @param closeUpAlgorithm {@link CloseUpAlgorithm} implementation, might be null
      * @see CloseUpAlgorithm
      * @see DefaultCloseUpAlgorithm
@@ -368,6 +385,7 @@ public class ScrollableLayout extends FrameLayout {
     /**
      * Note that {@link SimpleCloseUpIdleAnimationTime} might be set with xml definition
      * (<pre>{@code app:scrollable_closeUpAnimationMillis="200"}</pre>)
+     *
      * @param closeUpIdleAnimationTime {@link CloseUpIdleAnimationTime} implementation, might be null
      * @see CloseUpIdleAnimationTime
      * @see SimpleCloseUpIdleAnimationTime
@@ -379,8 +397,8 @@ public class ScrollableLayout extends FrameLayout {
 
     /**
      * @param configurator {@link CloseUpAnimatorConfigurator} implementation
-     *                                                        to process current close up
-     *                                                        {@link android.animation.ObjectAnimator}, might be null
+     *                     to process current close up
+     *                     {@link android.animation.ObjectAnimator}, might be null
      * @see CloseUpAnimatorConfigurator
      * @see android.animation.ObjectAnimator
      */
@@ -393,6 +411,7 @@ public class ScrollableLayout extends FrameLayout {
      * Please note, that returned {@link ValueAnimator} is not fully configured -
      * it needs at least `duration` property.
      * Also, there is no checks if the current scrollY is equal to the requested one.
+     *
      * @param scrollY the final scroll y to animate to
      * @return {@link ValueAnimator} configured to animate scroll state
      */
@@ -435,6 +454,7 @@ public class ScrollableLayout extends FrameLayout {
      * If set to true then ScrollableLayout will listen for global layout change of a view with
      * is passed through xml: scrollable_autoMaxScrollViewId OR first view in layout.
      * With this feature no need to specify `scrollable_maxScrollY` attribute
+     *
      * @param autoMaxScroll to listen for child view height and change mMaxScrollY accordingly
      */
     public void setAutoMaxScroll(boolean autoMaxScroll) {
@@ -443,8 +463,8 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     /**
-     * @see #setAutoMaxScroll(boolean)
      * @return `mAutoMaxScroll` value
+     * @see #setAutoMaxScroll(boolean)
      */
     public boolean isAutoMaxScroll() {
         return mAutoMaxScroll;
@@ -529,6 +549,7 @@ public class ScrollableLayout extends FrameLayout {
     /**
      * Sets View which should be included in receiving scroll gestures.
      * Maybe be null
+     *
      * @param view you wish to include in scrolling gestures (aka tabs)
      */
     public void setDraggableView(View view) {
@@ -562,7 +583,7 @@ public class ScrollableLayout extends FrameLayout {
                 mIsDraggingDraggable = false;
             }
         } else if (action == MotionEvent.ACTION_UP
-                || action == MotionEvent.ACTION_CANCEL){
+                || action == MotionEvent.ACTION_CANCEL) {
 
             mIsTouchOngoing = false;
 
@@ -573,15 +594,15 @@ public class ScrollableLayout extends FrameLayout {
         }
 
         final boolean isPrevScrolling = mIsScrolling;
-        final boolean isPrevFlinging  = mIsFlinging;
+        final boolean isPrevFlinging = mIsFlinging;
 
-        mIsFlinging     = mFlingDetector .onTouchEvent(event);
-        mIsScrolling    = mScrollDetector.onTouchEvent(event);
+        mIsFlinging = mFlingDetector.onTouchEvent(event);
+        mIsScrolling = mScrollDetector.onTouchEvent(event);
 
         removeCallbacks(mScrollRunnable);
         post(mScrollRunnable);
 
-        final boolean isIntercepted     = mIsScrolling || mIsFlinging;
+        final boolean isIntercepted = mIsScrolling || mIsFlinging;
         final boolean isPrevIntercepted = isPrevScrolling || isPrevFlinging;
 
         final boolean shouldRedirectDownTouch = action == MotionEvent.ACTION_MOVE
@@ -637,7 +658,7 @@ public class ScrollableLayout extends FrameLayout {
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         //int childTop = top;
-		int childTop = 0;
+        int childTop = 0;
         for (int i = 0; i < getChildCount(); i++) {
             final View view = getChildAt(i);
             view.layout(left, childTop, right, childTop + view.getMeasuredHeight());
@@ -719,6 +740,7 @@ public class ScrollableLayout extends FrameLayout {
     private class ScrollGestureListener extends GestureListenerAdapter {
 
         private final int mTouchSlop;
+
         {
             final ViewConfiguration vc = ViewConfiguration.get(getContext());
             mTouchSlop = vc.getScaledTouchSlop();
@@ -893,24 +915,24 @@ public class ScrollableLayout extends FrameLayout {
 
     @Override
     public Parcelable onSaveInstanceState() {
-    	final Parcelable superState = super.onSaveInstanceState();
-    	final ScrollableLayoutSavedState savedState = new ScrollableLayoutSavedState(superState);
+        final Parcelable superState = super.onSaveInstanceState();
+        final ScrollableLayoutSavedState savedState = new ScrollableLayoutSavedState(superState);
 
         savedState.scrollY = getScrollY();
 
-    	return savedState;
+        return savedState;
     }
 
     @Override
     public void onRestoreInstanceState(Parcelable state) {
 
-    	if (!(state instanceof ScrollableLayoutSavedState)) {
-    		super.onRestoreInstanceState(state);
-    		return;
-    	}
+        if (!(state instanceof ScrollableLayoutSavedState)) {
+            super.onRestoreInstanceState(state);
+            return;
+        }
 
-    	final ScrollableLayoutSavedState in = (ScrollableLayoutSavedState) state;
-    	super.onRestoreInstanceState(in.getSuperState());
+        final ScrollableLayoutSavedState in = (ScrollableLayoutSavedState) state;
+        super.onRestoreInstanceState(in.getSuperState());
 
         setScrollY(in.scrollY);
     }
@@ -919,35 +941,35 @@ public class ScrollableLayout extends FrameLayout {
 
         int scrollY;
 
-    	public ScrollableLayoutSavedState(Parcel source) {
-    		super(source);
+        public ScrollableLayoutSavedState(Parcel source) {
+            super(source);
 
             scrollY = source.readInt();
-    	}
+        }
 
-    	public ScrollableLayoutSavedState(Parcelable superState) {
-    		super(superState);
-    	}
+        public ScrollableLayoutSavedState(Parcelable superState) {
+            super(superState);
+        }
 
-    	@Override
-    	public void writeToParcel(Parcel out, int flags) {
-    		super.writeToParcel(out, flags);
+        @Override
+        public void writeToParcel(Parcel out, int flags) {
+            super.writeToParcel(out, flags);
 
             out.writeInt(scrollY);
-    	}
+        }
 
-    	public static final Creator<ScrollableLayoutSavedState> CREATOR
-    			= new Creator<ScrollableLayoutSavedState>() {
+        public static final Creator<ScrollableLayoutSavedState> CREATOR
+                = new Creator<ScrollableLayoutSavedState>() {
 
-    		@Override
-    		public ScrollableLayoutSavedState createFromParcel(Parcel in) {
-    			return new ScrollableLayoutSavedState(in);
-    		}
+            @Override
+            public ScrollableLayoutSavedState createFromParcel(Parcel in) {
+                return new ScrollableLayoutSavedState(in);
+            }
 
-    		@Override
-    		public ScrollableLayoutSavedState[] newArray(int size) {
-    			return new ScrollableLayoutSavedState[size];
-    		}
-    	};
+            @Override
+            public ScrollableLayoutSavedState[] newArray(int size) {
+                return new ScrollableLayoutSavedState[size];
+            }
+        };
     }
 }
