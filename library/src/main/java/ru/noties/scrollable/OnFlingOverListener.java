@@ -1,7 +1,7 @@
 package ru.noties.scrollable;
 
 /**
- * Class to listen for `fling` events & translate possible vertical scroll
+ * Class to listen for `fling` events and translate possible vertical scroll
  * to child view. This functionality would be useful (and actually used only for that)
  * to create effect of scroll continuation when ScrollableLayout completely collapses.
  * Created by Dimitry Ivanov on 13.04.2016.
