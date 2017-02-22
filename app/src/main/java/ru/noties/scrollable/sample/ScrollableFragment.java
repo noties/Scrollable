@@ -6,6 +6,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewPager;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -38,6 +39,23 @@ public class ScrollableFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {
         final View view = inflater.inflate(R.layout.fragment_scrollable, parent, false);
+        final SwipeRefreshLayout swipeRefreshLayout = findView(view, R.id.swipe_refresh_layout);
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                swipeRefreshLayout.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        swipeRefreshLayout.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                swipeRefreshLayout.setRefreshing(false);
+                            }
+                        });
+                    }
+                }, 2500L);
+            }
+        });
         final ScrollableLayout scrollableLayout = findView(view, R.id.scrollable_layout);
         final ViewPager header = findView(view, R.id.header_view_pager);
         final ViewPager pager = findView(view, R.id.view_pager);
