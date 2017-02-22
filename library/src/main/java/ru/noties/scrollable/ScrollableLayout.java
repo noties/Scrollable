@@ -487,9 +487,11 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     // we will override this method in order to function with SwipeRefreshLayout (and possible others)
+    // also, just in case, we will check if we can scroll to bottom
     @Override
     public boolean canScrollVertically(int direction) {
-        return direction < 0 && getScrollY() > 0;
+        return (direction < 0 && getScrollY() > 0)
+                || (direction > 0 && mCanScrollVerticallyDelegate.canScrollVertically(direction));
     }
 
     protected int getNewY(int y) {
