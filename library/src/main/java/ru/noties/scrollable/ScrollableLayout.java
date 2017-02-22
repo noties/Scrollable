@@ -21,6 +21,9 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import ru.noties.debug.AndroidLogDebugOutput;
+import ru.noties.debug.Debug;
+
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -108,6 +111,10 @@ import android.widget.FrameLayout;
  * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 28.03.2015.
  */
 public class ScrollableLayout extends FrameLayout {
+
+    static {
+        Debug.init(new AndroidLogDebugOutput(true));
+    }
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
@@ -490,10 +497,35 @@ public class ScrollableLayout extends FrameLayout {
     }
 
     // we will override this method in order to function with SwipeRefreshLayout (and possible others)
+    // also, just in case, we will check if we can scroll to bottom
     @Override
     public boolean canScrollVertically(int direction) {
-        return direction < 0 && getScrollY() > 0;
+        return (direction < 0 && getScrollY() > 0)
+                || (direction > 0 && mCanScrollVerticallyDelegate.canScrollVertically(direction));
     }
+
+    @Override
+    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
+        Debug.e("deltaX: %s, deltaY: %s, scrollX: %s, scrollY: %s, scrollRangeX: %s, scrollRangeY: %s, maxOverScrollX: %s, maxOverScrollY: %s, isTouchEvent: %s", deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+        return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
+    }
+
+    @Override
+    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
+        Debug.e("scrollX: %s, scrollY: %s, clampedX: %s, clampedY: %s", scrollX, scrollY, clampedX, clampedY);
+        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
+    }
+
+    @Override
+    public int getOverScrollMode() {
+        Debug.e("super: %d", super.getOverScrollMode());
+        return super.getOverScrollMode();
+    }
+
+//    @Override
+//    public void setOverScrollMode(int overScrollMode) {
+//        super.setOverScrollMode(overScrollMode);
+//    }
 
     protected int getNewY(int y) {
 
@@ -745,6 +777,7 @@ public class ScrollableLayout extends FrameLayout {
 
             final float absX = Math.abs(distanceX);
 
+            // forbid horizontal scrolling
             if (absX > Math.abs(distanceY)
                     || absX > mTouchSlop) {
                 return false;
@@ -752,6 +785,10 @@ public class ScrollableLayout extends FrameLayout {
 
             final int now = getScrollY();
             scrollBy(0, (int) (distanceY + .5F));
+
+            if (now == 0 && distanceY < .0F) {
+
+            }
 
             return now != getScrollY();
         }

@@ -77,6 +77,7 @@ public class ScrollableFragment extends Fragment {
         scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
+
                 final float tabsTranslationY;
                 if (y < maxY) {
                     tabsTranslationY = .0F;
