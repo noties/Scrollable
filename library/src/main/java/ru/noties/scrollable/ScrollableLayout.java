@@ -21,9 +21,6 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
-import ru.noties.debug.AndroidLogDebugOutput;
-import ru.noties.debug.Debug;
-
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -112,12 +109,14 @@ import ru.noties.debug.Debug;
  */
 public class ScrollableLayout extends FrameLayout {
 
-    static {
-        Debug.init(new AndroidLogDebugOutput(true));
-    }
+//    static {
+//        Debug.init(new AndroidLogDebugOutput(true));
+//    }
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
+
+    private final Rect mDraggableRect = new Rect();
 
     private ScrollableScroller mScroller;
     private GestureDetector mScrollDetector;
@@ -146,10 +145,6 @@ public class ScrollableLayout extends FrameLayout {
 
     private View mDraggableView;
     private boolean mIsDraggingDraggable;
-    private final Rect mDraggableRect;
-    {
-        mDraggableRect = new Rect();
-    }
 
     private long mConsiderIdleMillis;
 
@@ -163,6 +158,9 @@ public class ScrollableLayout extends FrameLayout {
     private boolean mAutoMaxScroll;
     private ViewTreeObserver.OnGlobalLayoutListener mAutoMaxScrollYLayoutListener;
     private int mAutoMaxScrollViewId;
+
+    private boolean mOverScrollStarted;
+    private OverScrollListener mOverScrollListener;
 
     public ScrollableLayout(Context context) {
         super(context);
@@ -460,6 +458,10 @@ public class ScrollableLayout extends FrameLayout {
         return mAutoMaxScroll;
     }
 
+    public void setOverScrollListener(OverScrollListener listener) {
+        mOverScrollListener = listener;
+    }
+
     protected void processAutoMaxScroll(boolean autoMaxScroll) {
 
         if (getChildCount() == 0) {
@@ -503,29 +505,6 @@ public class ScrollableLayout extends FrameLayout {
         return (direction < 0 && getScrollY() > 0)
                 || (direction > 0 && mCanScrollVerticallyDelegate.canScrollVertically(direction));
     }
-
-    @Override
-    protected boolean overScrollBy(int deltaX, int deltaY, int scrollX, int scrollY, int scrollRangeX, int scrollRangeY, int maxOverScrollX, int maxOverScrollY, boolean isTouchEvent) {
-        Debug.e("deltaX: %s, deltaY: %s, scrollX: %s, scrollY: %s, scrollRangeX: %s, scrollRangeY: %s, maxOverScrollX: %s, maxOverScrollY: %s, isTouchEvent: %s", deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
-        return super.overScrollBy(deltaX, deltaY, scrollX, scrollY, scrollRangeX, scrollRangeY, maxOverScrollX, maxOverScrollY, isTouchEvent);
-    }
-
-    @Override
-    protected void onOverScrolled(int scrollX, int scrollY, boolean clampedX, boolean clampedY) {
-        Debug.e("scrollX: %s, scrollY: %s, clampedX: %s, clampedY: %s", scrollX, scrollY, clampedX, clampedY);
-        super.onOverScrolled(scrollX, scrollY, clampedX, clampedY);
-    }
-
-    @Override
-    public int getOverScrollMode() {
-        Debug.e("super: %d", super.getOverScrollMode());
-        return super.getOverScrollMode();
-    }
-
-//    @Override
-//    public void setOverScrollMode(int overScrollMode) {
-//        super.setOverScrollMode(overScrollMode);
-//    }
 
     protected int getNewY(int y) {
 
@@ -584,6 +563,7 @@ public class ScrollableLayout extends FrameLayout {
             mIsDraggingDraggable = false;
             mIsScrolling = false;
             mIsFlinging = false;
+            mOverScrollStarted = false;
             removeCallbacks(mIdleRunnable);
             removeCallbacks(mScrollRunnable);
             return super.dispatchTouchEvent(event);
@@ -622,6 +602,8 @@ public class ScrollableLayout extends FrameLayout {
                 }
                 mEventRedirected = false;
             }
+
+            cancelOverScroll();
         }
 
         final boolean isPrevScrolling = mIsScrolling;
@@ -657,6 +639,13 @@ public class ScrollableLayout extends FrameLayout {
 
         super.dispatchTouchEvent(event);
         return true;
+    }
+
+    private void cancelOverScroll() {
+        if (mOverScrollListener != null && mOverScrollStarted) {
+            mOverScrollListener.onCancelled(this);
+        }
+        mOverScrollStarted = false;
     }
 
     private void cancelIdleAnimationIfRunning(boolean removeCallbacks) {
@@ -783,14 +772,19 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
-            final int now = getScrollY();
+            final int scrollY = getScrollY();
             scrollBy(0, (int) (distanceY + .5F));
 
-            if (now == 0 && distanceY < .0F) {
-
+            final int scrollYUpdated = getScrollY();
+            if (mOverScrollListener != null
+                    && scrollY == 0
+                    && scrollYUpdated == 0) {
+                mOverScrollStarted = true;
+                // todo, filter incredibly big amounts here
+                mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
             }
 
-            return now != getScrollY();
+            return scrollY != scrollYUpdated;
         }
     }
 
@@ -825,6 +819,25 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
+            int velocity = -(int) (velocityY + .5F);
+
+            {
+
+                // here, we need to modify a bit our velocity. It looks like some times...well
+                // we are receiving wrong velocityY (negative instead of positive) when flinging from top to bottom
+
+                final float e1y = e1.getY();
+                final float e2y = e2.getY();
+
+                // the logic is simple: if first event y < second, velocity must be positive, else negative
+                final int compare = Float.compare(e1y, e2y);
+                if ((compare < 0 && velocity > 0)
+                        || (compare > 0 && velocity < 0)) {
+                    // ensure that velocity is negative (as we have changed sign)
+                    velocity = -velocity;
+                }
+            }
+
             // if we have fling over listener and we are NOT in collapsed state -> redirect call
             // this will allow to skip unpleasant part with fling over event is dispatched a bit `off`
             // also..
@@ -834,7 +847,7 @@ public class ScrollableLayout extends FrameLayout {
                 final int duration;
 
                 // we will pass Integer.MAX_VALUE to calculate the maximum possible fling
-                mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, Integer.MAX_VALUE);
+                mScroller.fling(0, nowY, 0, velocity, 0, 0, 0, Integer.MAX_VALUE);
                 maxPossibleFinalY = mScroller.getFinalY();
                 duration = mScroller.getSplineFlingDuration(velocityY);
                 mOnFlingOverListener.onFlingOver(maxPossibleFinalY - mMaxScrollY, duration);
@@ -842,7 +855,7 @@ public class ScrollableLayout extends FrameLayout {
                 mScroller.abortAnimation();
             }
 
-            mScroller.fling(0, nowY, 0, -(int) (velocityY + .5F), 0, 0, 0, mMaxScrollY);
+            mScroller.fling(0, nowY, 0, velocity, 0, 0, 0, mMaxScrollY);
 
             if (mScroller.computeScrollOffset()) {
 

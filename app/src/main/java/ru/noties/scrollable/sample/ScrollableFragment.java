@@ -1,5 +1,7 @@
 package ru.noties.scrollable.sample;
 
+import android.animation.Animator;
+import android.animation.FloatEvaluator;
 import android.animation.ValueAnimator;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
@@ -13,14 +15,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import java.util.Arrays;
 import java.util.List;
 
+import ru.noties.debug.Debug;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
+import ru.noties.scrollable.OverScrollListener;
 import ru.noties.scrollable.ScrollableLayout;
 
 /**
@@ -53,9 +59,10 @@ public class ScrollableFragment extends Fragment {
                             }
                         });
                     }
-                }, 2500L);
+                }, 10000L);
             }
         });
+        swipeRefreshLayout.setEnabled(false);
         final ScrollableLayout scrollableLayout = findView(view, R.id.scrollable_layout);
         final ViewPager header = findView(view, R.id.header_view_pager);
         final ViewPager pager = findView(view, R.id.view_pager);
@@ -97,20 +104,102 @@ public class ScrollableFragment extends Fragment {
             }
         });
 
-        scrollableLayout.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                final ValueAnimator animator = scrollableLayout.animateScroll(0);
-                animator.setDuration(5000L);
-                animator.setInterpolator(new AccelerateDecelerateInterpolator());
-                animator.start();
-            }
-        }, 2000L);
+//        scrollableLayout.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                final ValueAnimator animator = scrollableLayout.animateScroll(0);
+//                animator.setDuration(5000L);
+//                animator.setInterpolator(new AccelerateDecelerateInterpolator());
+//                animator.start();
+//            }
+//        }, 2000L);
 
         final HeaderPagerAdapter headerPagerAdapter = new HeaderPagerAdapter(getChildFragmentManager(), 20);
         header.setAdapter(headerPagerAdapter);
 
+        scrollableLayout.setOverScrollListener(new OverScrollImpl());
+
         return view;
+    }
+
+    private static class OverScrollImpl implements OverScrollListener {
+
+        private float mDistanceY;
+        private ValueAnimator mAnimator;
+        private final Interpolator mInterpolator = new DecelerateInterpolator();
+
+        @Override
+        public void onOverScrolled(ScrollableLayout layout, float overScrollY) {
+
+            // cancel animation
+            if (mAnimator != null
+                    && mAnimator.isRunning()) {
+                mAnimator.cancel();
+            }
+
+            // make it positive
+            mDistanceY += -overScrollY;
+            if (Float.compare(mDistanceY, layout.getMaxScrollY()) > 0) {
+                mDistanceY = layout.getMaxScrollY();
+            }
+
+            // now evaluate our logic to scale header
+
+//            final float f = mInterpolator.getInterpolation((float) Math.cos(mDistanceY / layout.getMaxScrollY()));
+//            final float scale = 1.F + (f / 3.F);
+
+            final float ratio = mDistanceY / layout.getMaxScrollY();
+            // okay, for example, max scale is 1.5
+            final float scale = 1.F + (.5F * ratio);
+
+            // ((currentScale - 1.F) / .5F) * max
+
+            final View view = layout.getChildAt(0);
+            view.setScaleX(scale);
+            view.setScaleY(scale);
+
+            final View content = layout.getChildAt(1);
+            content.setTranslationY(((view.getHeight() * scale) - view.getHeight()) / 2.F);
+        }
+
+        @Override
+        public void onCancelled(ScrollableLayout layout) {
+
+            if (mAnimator != null
+                    && mAnimator.isRunning()) {
+                mAnimator.cancel();
+            }
+
+            // todo, here, with animation we must decrease our mDistance, so at the end it's just 0.0
+            final View header = layout.getChildAt(0);
+            final View content = layout.getChildAt(1);
+            final float currentScale = header.getScaleY();
+            if (Float.compare(currentScale, .0F) == 0) {
+                return;
+            }
+
+            // we are interested in:
+            // relative scale step & relative distance step
+
+            final float scaleDiff = currentScale - 1.F;
+//            final float distanceY = mDistanceY;
+            final float max = layout.getMaxScrollY();
+
+            mAnimator = ValueAnimator.ofFloat(.0F, 1.F);
+            mAnimator.setEvaluator(new FloatEvaluator());
+            mAnimator.setDuration(250L);
+            mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    final float fraction = animation.getAnimatedFraction();
+                    header.setScaleX(currentScale - (fraction * scaleDiff));
+                    header.setScaleY(currentScale - (fraction * scaleDiff));
+                    mDistanceY = (header.getScaleX() - 1.F) / .5F * max;
+                    content.setTranslationY(((header.getHeight() * header.getScaleX()) - header.getHeight()) / 2.F);
+                }
+            });
+            mAnimator.start();
+        }
     }
 
     private List<BaseFragment> fragments() {
