@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <color name="white">#FFffffff</color>
+    <color name="white">#ffffff</color>
     <color name="white_disabled">#9bffffff</color>
     <color name="header_background">#FF226666</color>
     <color name="tabs_background">#FF004d40</color>

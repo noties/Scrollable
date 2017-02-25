@@ -58,7 +58,7 @@ Simply wrap your views in `ru.noties.scrollable.ScrollableLayout`. The final xml
             android:id="@+id/header"
             android:gravity="center"/>
 
-        <ru.noties.scrollable.sample.TabsLayout
+        <ru.noties.scrollable.sample.next.TabsLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/tabs_height" --!(3)
             android:background="@color/tabs_background"

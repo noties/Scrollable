@@ -1,0 +1,8 @@
+<resources>
+
+    <style name="BaseTheme" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:colorPrimaryDark">@color/md_teal_500</item>
+        <item name="android:colorEdgeEffect">@color/md_teal_500</item>
+    </style>
+
+</resources>

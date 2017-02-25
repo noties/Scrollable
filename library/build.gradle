@@ -48,7 +48,7 @@ android.libraryVariants.all { variant ->
 
 dependencies {
     // used for debugging
-//    compile 'ru.noties:debug:3.0.0@jar'
+    compile 'ru.noties:debug:3.0.0@jar'
 }
 
 if (project.hasProperty('release')) {

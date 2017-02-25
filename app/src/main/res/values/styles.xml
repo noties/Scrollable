@@ -1,8 +1,13 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="BaseTheme">
         <!-- Customize your theme here. -->
+        <item name="android:windowBackground">@color/md_grey_50</item>
+    </style>
+
+    <style name="BaseTheme" parent="android:Theme.Holo.Light.NoActionBar">
+
     </style>
 
     <style name="ScrollableDialogStyle">

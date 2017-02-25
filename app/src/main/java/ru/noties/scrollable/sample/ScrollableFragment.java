@@ -1,6 +1,5 @@
 package ru.noties.scrollable.sample;
 
-import android.animation.Animator;
 import android.animation.FloatEvaluator;
 import android.animation.ValueAnimator;
 import android.os.Bundle;
@@ -14,20 +13,17 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.Interpolator;
 import android.widget.TextView;
 
 import java.util.Arrays;
 import java.util.List;
 
-import ru.noties.debug.Debug;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.OverScrollListener;
 import ru.noties.scrollable.ScrollableLayout;
+import ru.noties.scrollable.sample.next.TabsLayout;
 
 /**
  * Created by Dimitry Ivanov on 21.08.2015.
@@ -126,7 +122,6 @@ public class ScrollableFragment extends Fragment {
 
         private float mDistanceY;
         private ValueAnimator mAnimator;
-        private final Interpolator mInterpolator = new DecelerateInterpolator();
 
         @Override
         public void onOverScrolled(ScrollableLayout layout, float overScrollY) {

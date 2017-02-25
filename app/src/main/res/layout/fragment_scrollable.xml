@@ -28,7 +28,7 @@
                 android:layout_height="@dimen/header_height"
                 android:id="@+id/header_view_pager" />
 
-            <ru.noties.scrollable.sample.TabsLayout
+            <ru.noties.scrollable.sample.next.TabsLayout
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/tabs_height"
                 android:background="@color/tabs_background"

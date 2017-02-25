@@ -21,6 +21,9 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import ru.noties.debug.AndroidLogDebugOutput;
+import ru.noties.debug.Debug;
+
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -109,12 +112,13 @@ import android.widget.FrameLayout;
  */
 public class ScrollableLayout extends FrameLayout {
 
-//    static {
-//        Debug.init(new AndroidLogDebugOutput(true));
-//    }
+    static {
+        Debug.init(new AndroidLogDebugOutput(true));
+    }
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
+    private static final float DEFAULT_FRICTION = .06F;
 
     private final Rect mDraggableRect = new Rect();
 
@@ -185,10 +189,8 @@ public class ScrollableLayout extends FrameLayout {
             final boolean flyWheel = array.getBoolean(R.styleable.ScrollableLayout_scrollable_scrollerFlywheel, false);
             mScroller = initScroller(context, null, flyWheel);
 
-            final float friction = array.getFloat(R.styleable.ScrollableLayout_scrollable_friction, Float.NaN);
-            if (friction == friction) {
-                setFriction(friction);
-            }
+            final float friction = array.getFloat(R.styleable.ScrollableLayout_scrollable_friction, DEFAULT_FRICTION);
+            setFriction(friction);
 
             mMaxScrollY = array.getDimensionPixelSize(R.styleable.ScrollableLayout_scrollable_maxScroll, 0);
             mAutoMaxScroll = array.getBoolean(R.styleable.ScrollableLayout_scrollable_autoMaxScroll, mMaxScrollY == 0);
@@ -776,12 +778,14 @@ public class ScrollableLayout extends FrameLayout {
             scrollBy(0, (int) (distanceY + .5F));
 
             final int scrollYUpdated = getScrollY();
-            if (mOverScrollListener != null
-                    && scrollY == 0
-                    && scrollYUpdated == 0) {
-                mOverScrollStarted = true;
-                // todo, filter incredibly big amounts here
-                mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+            if (mOverScrollListener != null) {
+                // trigger tracking of over scroll
+                if (scrollY == 0 && scrollYUpdated == 0) {
+                    mOverScrollStarted = true;
+                }
+                if (mOverScrollStarted) {
+                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+                }
             }
 
             return scrollY != scrollYUpdated;
@@ -821,22 +825,28 @@ public class ScrollableLayout extends FrameLayout {
 
             int velocity = -(int) (velocityY + .5F);
 
-            {
+//            {
+//
+//                // here, we need to modify a bit our velocity. It looks like some times...well
+//                // we are receiving wrong velocityY (negative instead of positive) when flinging from top to bottom
+//
+//                final float e1y = e1.getY();
+//                final float e2y = e2.getY();
+//
+//                // the logic is simple: if first event y < second, velocity must be positive, else negative
+//                final int compare = Float.compare(e1y, e2y);
+//                if ((compare < 0 && velocity > 0)
+//                        || (compare > 0 && velocity < 0)) {
+//                    // ensure that velocity is negative (as we have changed sign)
+////                    velocity = -velocity;
+//                    Debug.e("changing sign, e1y: %s, e2y: %s", e1y, e2y);
+//                    Debug.i(e1);
+//                    Debug.i(e2);
+//                    e1.
+//                }
+//            }
 
-                // here, we need to modify a bit our velocity. It looks like some times...well
-                // we are receiving wrong velocityY (negative instead of positive) when flinging from top to bottom
-
-                final float e1y = e1.getY();
-                final float e2y = e2.getY();
-
-                // the logic is simple: if first event y < second, velocity must be positive, else negative
-                final int compare = Float.compare(e1y, e2y);
-                if ((compare < 0 && velocity > 0)
-                        || (compare > 0 && velocity < 0)) {
-                    // ensure that velocity is negative (as we have changed sign)
-                    velocity = -velocity;
-                }
-            }
+//            Debug.i("velocityY: %s, velocity: %d", velocityY, velocity);
 
             // if we have fling over listener and we are NOT in collapsed state -> redirect call
             // this will allow to skip unpleasant part with fling over event is dispatched a bit `off`

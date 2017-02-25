@@ -14,6 +14,7 @@ import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
+import ru.noties.scrollable.sample.next.TabsLayout;
 
 public class MainActivity extends BaseActivity implements ConfigurationFragmentCallbacks {
 
@@ -64,6 +65,7 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
 
                 tabs.setTranslationY(tabsTranslationY);
 
+                // parallax effect for collapse/expand
                 header.setTranslationY(y / 2);
             }
         });

@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample;
+package ru.noties.scrollable.sample.next;
 
 import android.animation.LayoutTransition;
 import android.content.Context;
@@ -13,9 +13,8 @@ import android.widget.HorizontalScrollView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-/**
- * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 29.03.2015.
- */
+import ru.noties.scrollable.sample.R;
+
 public class TabsLayout extends HorizontalScrollView {
 
     private ViewGroup mContainer;
@@ -65,7 +64,7 @@ public class TabsLayout extends HorizontalScrollView {
         populateViews();
         setItemSelected(0);
 
-        pager.setOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+        pager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
             @Override
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
