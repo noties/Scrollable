@@ -158,6 +158,11 @@ public class ScrollableFragment extends Fragment {
         }
 
         @Override
+        public boolean hasOverScroll(ScrollableLayout layout, float overScrollY) {
+            throw new RuntimeException();
+        }
+
+        @Override
         public void onCancelled(ScrollableLayout layout) {
 
             if (mAnimator != null
@@ -194,6 +199,11 @@ public class ScrollableFragment extends Fragment {
                 }
             });
             mAnimator.start();
+        }
+
+        @Override
+        public void clear() {
+            mDistanceY = .0F;
         }
     }
 

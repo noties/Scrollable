@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager;
+package ru.noties.scrollable.sample.next;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -12,20 +12,19 @@ import ru.noties.scrollable.sample.R;
 import ru.noties.vt.HolderSingle;
 import ru.noties.vt.ViewType;
 
-class ViewTypeItem extends ViewType<String, ViewTypeItem.ItemHolder> {
+public class ViewTypeItem extends ViewType<String, ViewTypeItem.ItemHolder> {
 
     @Override
-    protected ItemHolder createView(LayoutInflater inflater, ViewGroup parent) {
+    public ItemHolder createView(LayoutInflater inflater, ViewGroup parent) {
         return new ItemHolder(inflater.inflate(R.layout.vt_sample_view_pager_item, parent, false));
     }
 
     @Override
-    protected void bindView(Context context, ItemHolder holder, String item, List<Object> payloads) {
+    public void bindView(Context context, ItemHolder holder, String item, List<Object> payloads) {
         holder.view.setText(item);
     }
 
-    static class ItemHolder extends HolderSingle<TextView> {
-
+    public static class ItemHolder extends HolderSingle<TextView> {
         ItemHolder(View itemView) {
             super(itemView);
         }

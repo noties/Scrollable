@@ -8,7 +8,8 @@ import ru.noties.scrollable.sample.BuildConfig;
 
 public class App extends Application {
 
-    // support for all scrolling and non-scrolling views, including ScrollView, ListView, RecyclerView, ViewPager containing all of the above
+    // support for all scrolling and non-scrolling views, including ScrollView, ListView,
+    // RecyclerView, WebView, etc and ViewPager containing all of the above
 
     @Override
     public void onCreate() {

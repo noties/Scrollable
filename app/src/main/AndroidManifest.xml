@@ -24,7 +24,8 @@
 
         <activity android:name=".ScrollableInsideFragmentActivity"/>
 
-        <activity android:name=".next.viewpager.SampleViewPagerActivity"/>
+        <activity android:name=".next.viewpager.fragment.FragmentPagerActivity"/>
+        <activity android:name=".next.overscroll.custompullrefresh.CustomOverScrollActivity"/>
 
     </application>
 

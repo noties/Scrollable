@@ -21,7 +21,8 @@ import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.OverScrollListener;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
-import ru.noties.scrollable.sample.next.viewpager.SampleViewPagerActivity;
+import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
+import ru.noties.scrollable.sample.next.viewpager.fragment.FragmentPagerActivity;
 import ru.noties.vt.Holder;
 import ru.noties.vt.OnItemClickListener;
 import ru.noties.vt.ViewTypesAdapter;
@@ -124,7 +125,7 @@ public class SampleListActivity extends BaseActivity {
         final List<SampleListItem> items = new ArrayList<>();
 
         items.add(new SampleListItem(
-                SampleViewPagerActivity.class,
+                FragmentPagerActivity.class,
                 r.getString(R.string.sample_title_view_pager),
                 r.getString(R.string.sample_description_view_pager))
         );
@@ -136,7 +137,7 @@ public class SampleListActivity extends BaseActivity {
         ));
 
         items.add(new SampleListItem(
-                null,
+                CustomOverScrollActivity.class,
                 r.getString(R.string.sample_title_over_scroll_custom),
                 r.getString(R.string.sample_description_over_scroll_custom)
         ));
@@ -227,6 +228,11 @@ public class SampleListActivity extends BaseActivity {
         }
 
         @Override
+        public boolean hasOverScroll(ScrollableLayout layout, float overScrollY) {
+            return Float.compare(mDistanceY, 0) > 0;
+        }
+
+        @Override
         public void onCancelled(ScrollableLayout layout) {
 
             if (mAnimator != null
@@ -261,6 +267,11 @@ public class SampleListActivity extends BaseActivity {
                 }
             });
             mAnimator.start();
+        }
+
+        @Override
+        public void clear() {
+            mDistanceY = .0F;
         }
     }
 }

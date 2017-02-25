@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager;
+package ru.noties.scrollable.sample.next.viewpager.fragment;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -20,11 +20,11 @@ import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.next.BaseActivity;
 import ru.noties.scrollable.sample.next.TabsLayout;
 
-public class SampleViewPagerActivity extends BaseActivity {
+public class FragmentPagerActivity extends BaseActivity {
 
     private interface CurrentFragment {
         @Nullable
-        ViewPagerFragment currentFragment();
+        FragmentPagerFragment currentFragment();
     }
 
     @Override
@@ -38,7 +38,7 @@ public class SampleViewPagerActivity extends BaseActivity {
         final ViewPager viewPager = findView(R.id.view_pager);
         final TabsLayout tabsLayout = findView(R.id.tabs);
 
-        final ViewPagerAdapter adapter = new ViewPagerAdapter(getSupportFragmentManager(), items(getApplicationContext()));
+        final FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager(), items(getApplicationContext()));
         viewPager.setAdapter(adapter);
         tabsLayout.setViewPager(viewPager);
 
@@ -49,7 +49,7 @@ public class SampleViewPagerActivity extends BaseActivity {
         scrollableLayout.setCanScrollVerticallyDelegate(new CanScrollVerticallyDelegate() {
             @Override
             public boolean canScrollVertically(int direction) {
-                final ViewPagerFragment fragment = currentFragment.currentFragment();
+                final FragmentPagerFragment fragment = currentFragment.currentFragment();
                 return fragment != null && fragment.canScrollVertically(direction);
             }
         });
@@ -57,7 +57,7 @@ public class SampleViewPagerActivity extends BaseActivity {
         scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
             @Override
             public void onFlingOver(int y, long duration) {
-                final ViewPagerFragment fragment = currentFragment.currentFragment();
+                final FragmentPagerFragment fragment = currentFragment.currentFragment();
                 if (fragment != null) {
                     fragment.onFlingOver(y, duration);
                 }
@@ -83,50 +83,50 @@ public class SampleViewPagerActivity extends BaseActivity {
         });
     }
 
-    private static List<ViewPagerAdapter.Item> items(Context context) {
+    private static List<FragmentPagerAdapter.Item> items(Context context) {
         final Resources r = context.getResources();
-        final List<ViewPagerAdapter.Item> items = new ArrayList<>(4);
+        final List<FragmentPagerAdapter.Item> items = new ArrayList<>(4);
 
         // RecyclerView
-        items.add(new ViewPagerAdapter.Item(
-                r.getString(R.string.view_pager_sample_tab_recycler_view),
-                new ViewPagerAdapter.Provider() {
+        items.add(new FragmentPagerAdapter.Item(
+                r.getString(R.string.fragment_pager_tab_recycler_view),
+                new FragmentPagerAdapter.Provider() {
                     @Override
                     public Fragment provide() {
-                        return new ViewPagerFragmentRecyclerView();
+                        return new FragmentPagerFragmentRecyclerView();
                     }
                 }
         ));
 
         // ListView
-        items.add(new ViewPagerAdapter.Item(
-                r.getString(R.string.view_pager_sample_tab_list_view),
-                new ViewPagerAdapter.Provider() {
+        items.add(new FragmentPagerAdapter.Item(
+                r.getString(R.string.fragment_pager_tab_list_view),
+                new FragmentPagerAdapter.Provider() {
                     @Override
                     public Fragment provide() {
-                        return new ViewPagerFragmentListView();
+                        return new FragmentPagerFragmentListView();
                     }
                 }
         ));
 
         // ScrollView
-        items.add(new ViewPagerAdapter.Item(
-                r.getString(R.string.view_pager_sample_tab_scroll_view),
-                new ViewPagerAdapter.Provider() {
+        items.add(new FragmentPagerAdapter.Item(
+                r.getString(R.string.fragment_pager_tab_scroll_view),
+                new FragmentPagerAdapter.Provider() {
                     @Override
                     public Fragment provide() {
-                        return new ViewPagerFragmentScrollView();
+                        return new FragmentPagerFragmentScrollView();
                     }
                 }
         ));
 
-        //WebView
-        items.add(new ViewPagerAdapter.Item(
-                r.getString(R.string.view_pager_sample_tab_web_view),
-                new ViewPagerAdapter.Provider() {
+        // WebView
+        items.add(new FragmentPagerAdapter.Item(
+                r.getString(R.string.fragment_pager_tab_web_view),
+                new FragmentPagerAdapter.Provider() {
                     @Override
                     public Fragment provide() {
-                        return new ViewPagerFragmentWebView();
+                        return new FragmentPagerFragmentWebView();
                     }
                 }
         ));
@@ -138,18 +138,18 @@ public class SampleViewPagerActivity extends BaseActivity {
 
         private final ViewPager mViewPager;
         private final FragmentManager mFragmentManager;
-        private final ViewPagerAdapter mAdapter;
+        private final FragmentPagerAdapter mAdapter;
 
         CurrentFragmentImpl(ViewPager pager, FragmentManager manager) {
             mViewPager = pager;
             mFragmentManager = manager;
-            mAdapter = (ViewPagerAdapter) pager.getAdapter();
+            mAdapter = (FragmentPagerAdapter) pager.getAdapter();
         }
 
         @Override
         @Nullable
-        public ViewPagerFragment currentFragment() {
-            final ViewPagerFragment out;
+        public FragmentPagerFragment currentFragment() {
+            final FragmentPagerFragment out;
             final int position = mViewPager.getCurrentItem();
             if (position < 0
                     || position >= mAdapter.getCount()) {
@@ -158,7 +158,7 @@ public class SampleViewPagerActivity extends BaseActivity {
                 final String tag = makeFragmentName(mViewPager.getId(), mAdapter.getItemId(position));
                 final Fragment fragment = mFragmentManager.findFragmentByTag(tag);
                 if (fragment != null) {
-                    out = (ViewPagerFragment) fragment;
+                    out = (FragmentPagerFragment) fragment;
                 } else {
                     // fragment is still not attached
                     out = null;

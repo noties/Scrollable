@@ -774,21 +774,137 @@ public class ScrollableLayout extends FrameLayout {
                 return false;
             }
 
-            final int scrollY = getScrollY();
-            scrollBy(0, (int) (distanceY + .5F));
+            // okay, let's break-down the logic for overScroll
+            // IF overScrollListener is NULL, just do whatever we did
+            // ELSE
+            //      we start tracking of overScroll ONLY if we are at scrollY == 0 && direction of scroll is -1 (from top to bottom)
+            //      a touch event can `wander` from top to bottom and vice versa
+            //          and we still need to apply this:
+            //          IF direction == -1 -> call `hasOverScroll`
+            //          IF direction == 1 ->
 
-            final int scrollYUpdated = getScrollY();
-            if (mOverScrollListener != null) {
-                // trigger tracking of over scroll
-                if (scrollY == 0 && scrollYUpdated == 0) {
-                    mOverScrollStarted = true;
-                }
-                if (mOverScrollStarted) {
+            final int y = getScrollY();
+
+            if (mOverScrollListener == null) {
+                scrollBy(0, (int) (distanceY + .5F));
+                return y != getScrollY();
+            }
+
+            final int direction = Float.compare(distanceY, .0F) < 0 ? -1 : 1;
+
+            if (!mOverScrollStarted) {
+                mOverScrollStarted = y == 0 && direction == -1;
+            }
+
+            boolean handled = false;
+
+            if (mOverScrollStarted) {
+                // here we need to check what direction is this scroll event
+                if (direction == 1 && y == 0) {
+                    if (mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
+                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+                        handled = true;
+                    } else {
+                        mOverScrollListener.clear();
+                        mOverScrollStarted = false;
+                    }
+                } else {
                     mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
                 }
             }
 
-            return scrollY != scrollYUpdated;
+            if (!handled) {
+                scrollBy(0, (int) (distanceY + .5F));
+                return y != getScrollY();
+            } else {
+                return true;
+            }
+
+//            return false;
+
+//            boolean handled = false;
+//
+//            final int scrollY = getScrollY();
+//            if (mOverScrollListener != null) {
+//                if (!mOverScrollStarted) {
+//                    mOverScrollStarted = scrollY == 0 && distanceY < 0;
+//                }
+//                // it all depends on direction of the scroll if it's negative (from top to bottom)
+//                // we evaluate over scroll first
+//                // otherwise (from bottom to top) we scroll first
+//                if (mOverScrollStarted) {
+//                    final int direction = Float.compare(distanceY, .0F) < 0 ? -1 : 1;
+//                    if (direction < 0 && !mCanScrollVerticallyDelegate.canScrollVertically(-1)) {
+//                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+//                        handled = true;
+//                    }
+//                }
+////                if (!mCanScrollVerticallyDelegate.canScrollVertically(distanceY < 0 ? -1 : 1)) {
+////                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+////                }
+//            }
+//
+//            if (!handled) {
+//                scrollBy(0, (int) (distanceY + .5F));
+//                return scrollY != getScrollY();
+//            } else {
+//                return true;
+//            }
+
+//            scrollBy(0, (int) (distanceY + .5F));
+//            return scrollY != getScrollY();
+
+//            boolean handled = false;
+//
+//            if (mOverScrollListener != null) {
+//
+//                if (!mOverScrollStarted) {
+//                    mOverScrollStarted = scrollY == 0 && distanceY < 0;
+//                }
+//
+//                if (mOverScrollStarted) {
+//                    Debug.i("distcneY: %s, hasOverScroll: %s", distanceY, mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY));
+//                    if (mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
+//                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+//                        handled = true;
+//                    } else {
+//                        mOverScrollListener.clear();
+//                    }
+//                }
+//
+////                if (mOverScrollStarted && mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
+////                    // no scroll
+////                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+////                    handled = true;
+////                }
+//            }
+//
+//            if (!handled) {
+//                scrollBy(0, (int) (distanceY + .5F));
+//                return scrollY != getScrollY();
+//            } else {
+//                return true;
+//            }
+
+//            // so, while we have overScroll, we must skip scrolling of layout itself
+//
+//            Debug.i(distanceY, mOverScrollY);
+//
+//            scrollBy(0, (int) (distanceY + .5F));
+//
+//            final int scrollYUpdated = getScrollY();
+//            if (mOverScrollListener != null) {
+//                // trigger tracking of over scroll
+//                if (scrollY == 0 && scrollYUpdated == 0) {
+//                    mOverScrollStarted = true;
+//                    mOverScrollY = distanceY;
+//                }
+//                if (mOverScrollStarted) {
+//                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+//                }
+//            }
+//
+//            return scrollY != scrollYUpdated;
         }
     }
 

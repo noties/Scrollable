@@ -12,15 +12,15 @@ class SampleListItem {
         this.description = description;
     }
 
-    public Class<?> sampleActivityClass() {
+    Class<?> sampleActivityClass() {
         return sampleActivityClass;
     }
 
-    public String title() {
+    String title() {
         return title;
     }
 
-    public String description() {
+    String description() {
         return description;
     }
 

@@ -24,4 +24,13 @@
         <item name="android:windowExitAnimation">@anim/fade_out</item>
     </style>
 
+    <style name="HeaderTextStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/white_disabled</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
 </resources>

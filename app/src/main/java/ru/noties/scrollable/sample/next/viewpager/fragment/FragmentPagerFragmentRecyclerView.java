@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager;
+package ru.noties.scrollable.sample.next.viewpager.fragment;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -7,19 +7,20 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import ru.noties.scrollable.sample.R;
+import ru.noties.scrollable.sample.next.ViewTypeItem;
+import ru.noties.scrollable.sample.next.ItemsGenerator;
 import ru.noties.vt.ViewTypesAdapter;
 
-public class ViewPagerFragmentRecyclerView extends ViewPagerFragment {
+public class FragmentPagerFragmentRecyclerView extends FragmentPagerFragment {
 
     private RecyclerView mRecyclerView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {
-        return inflater.inflate(R.layout.fragment_sample_view_pager_recycler_view, parent, false);
+        return inflater.inflate(R.layout.fragment_pager_recycler_view, parent, false);
     }
 
     @Override
@@ -35,10 +36,7 @@ public class ViewPagerFragmentRecyclerView extends ViewPagerFragment {
                 .setHasStableIds(false)
                 .build(getContext());
 
-        final List<String> list = new ArrayList<>(100);
-        for (int i = 0; i < 100; i++) {
-            list.add("Item #" + i);
-        }
+        final List<String> list = ItemsGenerator.generate(100);
         adapter.setItems(list);
 
         mRecyclerView.setAdapter(adapter);

@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager;
+package ru.noties.scrollable.sample.next.viewpager.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -8,13 +8,13 @@ import android.webkit.WebView;
 
 import ru.noties.scrollable.sample.R;
 
-public class ViewPagerFragmentWebView extends ViewPagerFragment {
+public class FragmentPagerFragmentWebView extends FragmentPagerFragment {
 
     private WebView mWebView;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup parent, Bundle sis) {
-        return inflater.inflate(R.layout.fragment_sample_view_pager_web_view, parent, false);
+        return inflater.inflate(R.layout.fragment_pager_web_view, parent, false);
     }
 
     @Override

@@ -1,12 +1,11 @@
-package ru.noties.scrollable.sample.next.viewpager;
+package ru.noties.scrollable.sample.next.viewpager.fragment;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
 
 import java.util.List;
 
-class ViewPagerAdapter extends FragmentPagerAdapter {
+class FragmentPagerAdapter extends android.support.v4.app.FragmentPagerAdapter {
 
     interface Provider {
         Fragment provide();
@@ -17,7 +16,7 @@ class ViewPagerAdapter extends FragmentPagerAdapter {
         final String name;
         final Provider provider;
 
-        public Item(String name, Provider provider) {
+        Item(String name, Provider provider) {
             this.name = name;
             this.provider = provider;
         }
@@ -25,7 +24,7 @@ class ViewPagerAdapter extends FragmentPagerAdapter {
 
     private final List<Item> mItems;
 
-    ViewPagerAdapter(FragmentManager fm, List<Item> items) {
+    FragmentPagerAdapter(FragmentManager fm, List<Item> items) {
         super(fm);
         mItems = items;
     }

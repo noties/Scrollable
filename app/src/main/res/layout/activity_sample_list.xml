@@ -16,15 +16,11 @@
 
         <TextView
             android:id="@+id/header"
-            android:layout_width="match_parent"
+            style="@style/HeaderTextStyle"
             android:layout_height="@dimen/tabs_height"
             android:layout_gravity="center"
             android:background="@color/md_teal_300"
-            android:gravity="center"
-            android:text="@string/app_name"
-            android:textColor="@color/white_disabled"
-            android:textSize="30sp"
-            android:textStyle="bold"/>
+            android:text="@string/app_name"/>
 
     </FrameLayout>
 
@@ -35,7 +31,8 @@
         android:layout_marginTop="@dimen/tabs_height"
         android:clipToPadding="false"
         android:paddingBottom="4dip"
-        android:paddingTop="4dip"/>
+        android:paddingTop="4dip"
+        android:scrollbars="vertical"/>
 
 
 </ru.noties.scrollable.ScrollableLayout>

@@ -2,7 +2,7 @@
 <resources>
 
     <string name="sample_title_view_pager">ViewPager</string>
-    <string name="sample_description_view_pager">Usage of ScrollableLayout with ViewPager and sticky tabs</string>
+    <string name="sample_description_view_pager">Usage of ScrollableLayout with ViewPager and Fragments and sticky tabs. Layouts used: RecyclerView, ListView, ScrollView, WebView</string>
 
     <string name="sample_title_swipe_refresh">SwipeRefreshLayout</string>
     <string name="sample_description_swipe_refresh">Usage of ScrollableLayout inside SwipeRefreshLayout</string>
@@ -16,8 +16,8 @@
     <string name="sample_title_over_scroll_scale">OverScroll scale</string>
     <string name="sample_description_over_scroll_scale">Detects if over scroll is present and zooms in header (bouncy effect)</string>
 
-    <string name="sample_title_over_scroll_custom">OverScroll custom</string>
-    <string name="sample_description_over_scroll_custom">Detects if over scroll is present and shows custom progress above</string>
+    <string name="sample_title_over_scroll_custom">OverScroll custom (w/ pull-to-refresh)</string>
+    <string name="sample_description_over_scroll_custom">Detects if over scroll is present and triggers custom pull-to-refresh behavior</string>
 
     <string name="sample_title_inside_fragment">Inside Fragment</string>
     <string name="sample_description_inside_fragment">Usage of ScrollableLayout inside Fragment with ViewPager and child FragmentManager</string>
