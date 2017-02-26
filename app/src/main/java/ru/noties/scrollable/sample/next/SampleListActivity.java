@@ -137,17 +137,17 @@ public class SampleListActivity extends BaseActivity {
                 r.getString(R.string.sample_description_manual_control)
         ));
 
-        items.add(new SampleListItem(
-                null,
-                r.getString(R.string.sample_title_inside_fragment),
-                r.getString(R.string.sample_description_inside_fragment)
-        ));
+//        items.add(new SampleListItem(
+//                null,
+//                r.getString(R.string.sample_title_inside_fragment),
+//                r.getString(R.string.sample_description_inside_fragment)
+//        ));
 
-        items.add(new SampleListItem(
-                null,
-                r.getString(R.string.sample_title_header_view_pager),
-                r.getString(R.string.sample_description_header_view_pager)
-        ));
+//        items.add(new SampleListItem(
+//                null,
+//                r.getString(R.string.sample_title_header_view_pager),
+//                r.getString(R.string.sample_description_header_view_pager)
+//        ));
 
         return items;
     }

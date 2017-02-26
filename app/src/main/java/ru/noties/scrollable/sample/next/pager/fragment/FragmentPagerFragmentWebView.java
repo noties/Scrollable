@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 import ru.noties.scrollable.sample.R;
@@ -22,6 +23,7 @@ public class FragmentPagerFragmentWebView extends FragmentPagerFragment {
         super.onViewCreated(view, sis);
 
         mWebView = findView(R.id.web_view);
+        mWebView.setWebChromeClient(new WebChromeClient());
         mWebView.post(new Runnable() {
             @Override
             public void run() {

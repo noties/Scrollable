@@ -31,7 +31,7 @@ public class FragmentPagerFragmentListView extends FragmentPagerFragment {
         final List<String> items = ItemsGenerator.generate(100);
 
         // Normally I would never ever use `ArrayAdapter`, but for the brevity of this sample it's ok
-        final BaseAdapter adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_1, items);
+        final BaseAdapter adapter = new ArrayAdapter<>(getContext(), R.layout.vt_item, items);
         mListView.setAdapter(adapter);
     }
 
