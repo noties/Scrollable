@@ -21,6 +21,7 @@ import ru.noties.scrollable.sample.next.dialog.ScrollableDialog;
 import ru.noties.scrollable.sample.next.manual.ManualControlActivity;
 import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
 import ru.noties.scrollable.sample.next.pager.fragment.FragmentPagerActivity;
+import ru.noties.scrollable.sample.next.scrollheader.ScrollHeaderActivity;
 import ru.noties.scrollable.sample.next.swiperefresh.SwipeRefreshActivity;
 import ru.noties.vt.Holder;
 import ru.noties.vt.OnItemClickListener;
@@ -135,6 +136,12 @@ public class SampleListActivity extends BaseActivity {
                 ManualControlActivity.class,
                 r.getString(R.string.sample_title_manual_control),
                 r.getString(R.string.sample_description_manual_control)
+        ));
+
+        items.add(new SampleListItem(
+                ScrollHeaderActivity.class,
+                r.getString(R.string.sample_title_scrollable_header),
+                r.getString(R.string.sample_description_scrollable_header)
         ));
 
 //        items.add(new SampleListItem(

@@ -29,6 +29,7 @@
         <activity android:name=".next.swiperefresh.SwipeRefreshActivity"/>
         <activity android:name=".next.manual.ManualControlActivity"/>
         <activity android:name=".next.pager.view.ViewPagerActivity"/>
+        <activity android:name=".next.scrollheader.ScrollHeaderActivity"/>
 
     </application>
 

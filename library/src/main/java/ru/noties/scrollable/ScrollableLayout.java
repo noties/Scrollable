@@ -124,7 +124,7 @@ public class ScrollableLayout extends FrameLayout {
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
-    private static final float DEFAULT_FRICTION = .06F;
+    private static final float DEFAULT_FRICTION = .0565F;
 
     private final Rect mDraggableRect = new Rect();
 
@@ -172,6 +172,9 @@ public class ScrollableLayout extends FrameLayout {
 
     private boolean mOverScrollStarted;
     private OverScrollListener mOverScrollListener;
+
+    private int mScrollingHeaderId;
+    private View mScrollingHeader;
 
     public ScrollableLayout(Context context) {
         super(context);
@@ -225,11 +228,11 @@ public class ScrollableLayout extends FrameLayout {
                 setCloseAnimatorConfigurator(new InterpolatorCloseUpAnimatorConfigurator(interpolator));
             }
 
+            mScrollingHeaderId = array.getResourceId(R.styleable.ScrollableLayout_scrollable_scrollingHeaderId, 0);
+
         } finally {
             array.recycle();
         }
-
-//        setVerticalScrollBarEnabled(true);
 
         mScrollDetector = new GestureDetector(context, new ScrollGestureListener());
         mFlingDetector  = new GestureDetector(context, new FlingGestureListener(context));
@@ -251,6 +254,18 @@ public class ScrollableLayout extends FrameLayout {
         if (mAutoMaxScroll) {
             processAutoMaxScroll(true);
         }
+
+        final View scrollingHeader;
+        if (mScrollingHeaderId != 0) {
+            scrollingHeader = findViewById(mScrollingHeaderId);
+        } else {
+            if (getChildCount() > 0) {
+                scrollingHeader = getChildAt(0);
+            } else {
+                scrollingHeader = null;
+            }
+        }
+        mScrollingHeader = scrollingHeader;
     }
 
     /**
@@ -565,9 +580,12 @@ public class ScrollableLayout extends FrameLayout {
                 }
             } else {
 
+                // we are adding support for the scrolling view in the `header` section (first view)
+                // we just check if header can scroll in top-bottom direction (but only if we are not dragging draggable view)
+
                 // else check if we are at max scroll
-                if (currentY == mMaxScrollY
-                        && !mCanScrollVerticallyDelegate.canScrollVertically(direction)) {
+                if ((!mIsDraggingDraggable && !mSelfUpdateScroll && canHeaderScroll(direction))
+                        || (currentY == mMaxScrollY && !mCanScrollVerticallyDelegate.canScrollVertically(direction))) {
                     return -1;
                 }
             }
@@ -724,6 +742,10 @@ public class ScrollableLayout extends FrameLayout {
                 childTop += view.getMeasuredHeight();
             }
         }
+    }
+
+    private boolean canHeaderScroll(int direction) {
+        return mScrollingHeader != null && mScrollingHeader.canScrollVertically(direction);
     }
 
     private final Runnable mScrollRunnable = new Runnable() {
@@ -890,31 +912,10 @@ public class ScrollableLayout extends FrameLayout {
 
             int velocity = -(int) (velocityY + .5F);
 
-//            {
-//
-//                // here, we need to modify a bit our velocity. It looks like some times...well
-//                // we are receiving wrong velocityY (negative instead of positive) when flinging from top to bottom
-//
-//                final float e1y = e1.getY();
-//                final float e2y = e2.getY();
-//
-//                // the logic is simple: if first event y < second, velocity must be positive, else negative
-//                final int compare = Float.compare(e1y, e2y);
-//                if ((compare < 0 && velocity > 0)
-//                        || (compare > 0 && velocity < 0)) {
-//                    // ensure that velocity is negative (as we have changed sign)
-////                    velocity = -velocity;
-//                    Debug.e("changing sign, e1y: %s, e2y: %s", e1y, e2y);
-//                    Debug.i(e1);
-//                    Debug.i(e2);
-//                    e1.
-//                }
-//            }
-
             // if we have fling over listener and we are NOT in collapsed state -> redirect call
             // this will allow to skip unpleasant part with fling over event is dispatched a bit `off`
             // also..
-            if (mOnFlingOverListener != null && mMaxScrollY != getScrollY()) {
+            if (!mIsDraggingDraggable && mOnFlingOverListener != null && mMaxScrollY != getScrollY()) {
 
                 final int maxPossibleFinalY;
                 final int duration;

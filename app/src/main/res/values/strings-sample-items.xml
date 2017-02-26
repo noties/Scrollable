@@ -25,4 +25,7 @@
     <string name="sample_title_header_view_pager">Header ViewPager</string>
     <string name="sample_description_header_view_pager">ScrollableLayout with ViewPager header</string>
 
+    <string name="sample_title_scrollable_header">Scrollable header</string>
+    <string name="sample_description_scrollable_header">A header that is a scroll container (RecyclerView)</string>
+
 </resources>
