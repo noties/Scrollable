@@ -17,6 +17,7 @@ import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OverScrollListenerBase;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
+import ru.noties.scrollable.sample.next.dialog.ScrollableDialog;
 import ru.noties.scrollable.sample.next.manual.ManualControlActivity;
 import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
 import ru.noties.scrollable.sample.next.pager.fragment.FragmentPagerActivity;
@@ -80,8 +81,14 @@ public class SampleListActivity extends BaseActivity {
                 .registerOnClickListener(new OnItemClickListener<SampleListItem, Holder>() {
                     @Override
                     public void onItemClick(SampleListItem item, Holder holder) {
-                        final Intent intent = new Intent(SampleListActivity.this, item.sampleActivityClass());
-                        startActivity(intent);
+                        // yeah, conditions...
+                        if (ScrollableDialog.class.equals(item.sampleActivityClass())) {
+                            final ScrollableDialog dialog = new ScrollableDialog();
+                            dialog.show(getSupportFragmentManager(), "tag.Dialog");
+                        } else {
+                            final Intent intent = new Intent(SampleListActivity.this, item.sampleActivityClass());
+                            startActivity(intent);
+                        }
                     }
                 })
                 .build(this);
@@ -113,7 +120,7 @@ public class SampleListActivity extends BaseActivity {
         ));
 
         items.add(new SampleListItem(
-                null,
+                ScrollableDialog.class,
                 r.getString(R.string.sample_title_dialog),
                 r.getString(R.string.sample_description_dialog)
         ));

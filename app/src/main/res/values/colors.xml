@@ -7,6 +7,8 @@
     <color name="tabs_background">#FF004d40</color>
     <color name="dialog_placeholder_color">#aa000000</color>
 
+    <color name="scrollable_dialog_status_bar_color">#142f2c</color>
+
     <color name="color_1">#FFffcdd2</color>
     <color name="color_2">#FFf8bbd0</color>
     <color name="color_3">#FFe1bee7</color>

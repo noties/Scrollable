@@ -1,46 +1,40 @@
-package ru.noties.scrollable.sample;
+package ru.noties.scrollable.sample.next.dialog;
 
 import android.app.Dialog;
+import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.annotation.NonNull;
 import android.support.v4.app.DialogFragment;
-import android.util.Log;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-import android.widget.ListView;
+import android.view.Window;
 
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
-import ru.noties.scrollable.CloseUpAlgorithm;
 import ru.noties.scrollable.DefaultCloseUpAlgorithm;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
+import ru.noties.scrollable.sample.R;
+import ru.noties.scrollable.sample.ViewUtils;
+import ru.noties.scrollable.sample.next.ItemsGenerator;
+import ru.noties.scrollable.sample.next.ViewTypeItem;
+import ru.noties.vt.ViewTypesAdapter;
 
-/**
- * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 29.03.2015.
- */
 public class ScrollableDialog extends DialogFragment {
-
-    private static final String ARG_FRICTION = "arg.Friction";
-
-    public static ScrollableDialog newInstance(float friction) {
-        final Bundle bundle = new Bundle();
-        bundle.putFloat(ARG_FRICTION, friction);
-
-        final ScrollableDialog fragment = new ScrollableDialog();
-        fragment.setArguments(bundle);
-        return fragment;
-    }
 
     @Override
     @NonNull
     public Dialog onCreateDialog(Bundle sis) {
 
-        final Dialog dialog = new Dialog(getActivity(), R.style.ScrollableDialogStyle);
-        final LayoutInflater inflater = LayoutInflater.from(getActivity());
+        final Context context = getContext();
+        final Dialog dialog = new Dialog(context, R.style.ScrollableDialogStyle);
+        final LayoutInflater inflater = LayoutInflater.from(context);
         final View view = inflater.inflate(R.layout.fragment_dialog, null);
 
         dialog.setContentView(view);
@@ -71,26 +65,30 @@ public class ScrollableDialog extends DialogFragment {
         });
 
         scrollableLayout.setDraggableView(title);
-        scrollableLayout.setFriction(getArguments().getFloat(ARG_FRICTION, BuildConfig.START_FRICTION));
 
-        final ListView listView = findView(view, R.id.list_view);
-        final BaseListAdapter adapter = new BaseListAdapter(getActivity(), 50);
-        listView.setAdapter(adapter);
+        final RecyclerView recyclerView = findView(view, R.id.recycler_view);
+        final ViewTypesAdapter<String> adapter = ViewTypesAdapter.builder(String.class)
+                .register(String.class, new ViewTypeItem())
+                .build(context);
+        adapter.setItems(ItemsGenerator.generate(100));
+        recyclerView.setLayoutManager(new LinearLayoutManager(context));
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(adapter);
 
         scrollableLayout.setCanScrollVerticallyDelegate(new CanScrollVerticallyDelegate() {
             @Override
             public boolean canScrollVertically(int direction) {
-                return listView.canScrollVertically(direction);
+                return recyclerView.canScrollVertically(direction);
             }
         });
         scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
             @Override
             public void onFlingOver(int y, long duration) {
-                listView.smoothScrollBy(y, (int) duration);
+                recyclerView.smoothScrollBy(0, y);
             }
         });
 
-        scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        scrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
 
@@ -117,6 +115,13 @@ public class ScrollableDialog extends DialogFragment {
                 }
             }
         });
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            final Window window = dialog.getWindow();
+            if (window != null) {
+                window.setStatusBarColor(ContextCompat.getColor(getContext(), R.color.scrollable_dialog_status_bar_color));
+            }
+        }
 
         return dialog;
     }

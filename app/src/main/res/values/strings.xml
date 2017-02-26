@@ -4,6 +4,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <string name="scrollable_dialog_title">Pick something</string>
+
     <string name="fragment_configuration_title">Configuration</string>
 
     <string name="fragment_pager_tab_list_view">ListView</string>

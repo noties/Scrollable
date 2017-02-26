@@ -15,6 +15,7 @@ import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.next.TabsLayout;
+import ru.noties.scrollable.sample.next.dialog.ScrollableDialog;
 
 public class MainActivity extends BaseActivity implements ConfigurationFragmentCallbacks {
 
@@ -129,7 +130,7 @@ public class MainActivity extends BaseActivity implements ConfigurationFragmentC
 
     @Override
     public void openDialog(float friction) {
-        final ScrollableDialog dialog = ScrollableDialog.newInstance(friction);
+        final ScrollableDialog dialog = new ScrollableDialog();
         dialog.show(getSupportFragmentManager(), null);
     }
 
