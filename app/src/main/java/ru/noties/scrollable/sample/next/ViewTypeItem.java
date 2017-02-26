@@ -16,7 +16,7 @@ public class ViewTypeItem extends ViewType<String, ViewTypeItem.ItemHolder> {
 
     @Override
     public ItemHolder createView(LayoutInflater inflater, ViewGroup parent) {
-        return new ItemHolder(inflater.inflate(R.layout.vt_sample_view_pager_item, parent, false));
+        return new ItemHolder(inflater.inflate(R.layout.vt_item, parent, false));
     }
 
     @Override

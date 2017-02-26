@@ -3,6 +3,7 @@ package ru.noties.scrollable.sample.next.overscroll.custompullrefresh;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
@@ -33,6 +34,7 @@ class CircleProgressDrawable extends Drawable {
         if (!mRectF.isEmpty()) {
             final int save = canvas.save();
             try {
+                canvas.rotate(180.F * mProgress, mRectF.centerX(), mRectF.centerY());
                 canvas.drawArc(mRectF, 270.F, (360.F * mProgress), true, mPaint);
             } finally {
                 canvas.restoreToCount(save);
@@ -52,7 +54,7 @@ class CircleProgressDrawable extends Drawable {
 
     @Override
     public int getOpacity() {
-        return 0;
+        return PixelFormat.OPAQUE;
     }
 
     void setProgress(float progress) {

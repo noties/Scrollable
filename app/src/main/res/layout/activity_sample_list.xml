@@ -5,34 +5,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:scrollable_autoMaxScroll="false"
-    app:scrollable_defaultCloseUp="true">
+    app:scrollable_defaultCloseUp="true"
+    app:scrollable_maxScroll="@dimen/header_scrollable_max_scroll">
 
-    <FrameLayout
-        android:id="@+id/header_container"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/header_height"
-        android:background="@color/md_teal_300">
-
-        <TextView
-            android:id="@+id/header"
-            style="@style/HeaderTextStyle"
-            android:layout_height="@dimen/tabs_height"
-            android:layout_gravity="center"
-            android:background="@color/md_teal_300"
-            android:text="@string/app_name"/>
-
-    </FrameLayout>
+    <ru.noties.scrollable.sample.next.SampleHeaderView
+        style="@style/HeaderStyle"
+        app:shv_title="@string/app_name"/>
 
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/tabs_height"
+        android:layout_marginTop="@dimen/header_title_height"
         android:clipToPadding="false"
         android:paddingBottom="4dip"
         android:paddingTop="4dip"
         android:scrollbars="vertical"/>
-
 
 </ru.noties.scrollable.ScrollableLayout>

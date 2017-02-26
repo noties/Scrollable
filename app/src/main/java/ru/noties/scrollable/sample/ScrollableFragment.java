@@ -124,7 +124,7 @@ public class ScrollableFragment extends Fragment {
         private ValueAnimator mAnimator;
 
         @Override
-        public void onOverScrolled(ScrollableLayout layout, float overScrollY) {
+        public void onOverScrolled(ScrollableLayout layout, int overScrollY) {
 
             // cancel animation
             if (mAnimator != null
@@ -158,8 +158,8 @@ public class ScrollableFragment extends Fragment {
         }
 
         @Override
-        public boolean hasOverScroll(ScrollableLayout layout, float overScrollY) {
-            throw new RuntimeException();
+        public boolean hasOverScroll(ScrollableLayout layout, int overScrollY) {
+            return mDistanceY > 0;
         }
 
         @Override

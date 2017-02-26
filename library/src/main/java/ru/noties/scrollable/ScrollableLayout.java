@@ -21,6 +21,9 @@ import android.view.animation.AnimationUtils;
 import android.view.animation.Interpolator;
 import android.widget.FrameLayout;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import ru.noties.debug.AndroidLogDebugOutput;
 import ru.noties.debug.Debug;
 
@@ -112,9 +115,12 @@ import ru.noties.debug.Debug;
  */
 public class ScrollableLayout extends FrameLayout {
 
+    // todo
     static {
         Debug.init(new AndroidLogDebugOutput(true));
     }
+
+    // todo, track created ValueAnimators and unsubscribe onDetach
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
@@ -122,12 +128,13 @@ public class ScrollableLayout extends FrameLayout {
 
     private final Rect mDraggableRect = new Rect();
 
+    private final List<OnScrollChangedListener> mOnScrollChangedListeners = new ArrayList<>(3);
+
     private ScrollableScroller mScroller;
     private GestureDetector mScrollDetector;
     private GestureDetector mFlingDetector;
 
     private CanScrollVerticallyDelegate mCanScrollVerticallyDelegate;
-    private OnScrollChangedListener mOnScrollChangedListener;
 
     private int mMaxScrollY;
 
@@ -222,7 +229,7 @@ public class ScrollableLayout extends FrameLayout {
             array.recycle();
         }
 
-        setVerticalScrollBarEnabled(true);
+//        setVerticalScrollBarEnabled(true);
 
         mScrollDetector = new GestureDetector(context, new ScrollGestureListener());
         mFlingDetector  = new GestureDetector(context, new FlingGestureListener(context));
@@ -317,8 +324,22 @@ public class ScrollableLayout extends FrameLayout {
      * @param listener to be invoked when {@link #onScrollChanged(int, int, int, int)} has been called.
      *                 Might be <code>null</code> if you don\'t want to receive scroll notifications anymore
      */
+    @Deprecated
     public void setOnScrollChangedListener(OnScrollChangedListener listener) {
-        this.mOnScrollChangedListener = listener;
+        mOnScrollChangedListeners.clear();
+        addOnScrollChangedListener(listener);
+    }
+
+    public void addOnScrollChangedListener(OnScrollChangedListener listener) {
+        if (listener != null) {
+            mOnScrollChangedListeners.add(listener);
+        }
+    }
+
+    public void removeOnScrollChangedListener(OnScrollChangedListener listener) {
+        if (listener != null) {
+            mOnScrollChangedListeners.remove(listener);
+        }
     }
 
     public void setOnFlingOverListener(OnFlingOverListener onFlingOverListener) {
@@ -335,8 +356,14 @@ public class ScrollableLayout extends FrameLayout {
 
         final boolean changed = t != oldT;
 
-        if (changed && mOnScrollChangedListener != null) {
-            mOnScrollChangedListener.onScrollChanged(t, oldT, mMaxScrollY);
+        final int size = changed
+                ? mOnScrollChangedListeners.size()
+                : 0;
+
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                mOnScrollChangedListeners.get(i).onScrollChanged(t, oldT, mMaxScrollY);
+            }
         }
 
         if (mCloseUpAlgorithm != null) {
@@ -345,6 +372,8 @@ public class ScrollableLayout extends FrameLayout {
                 postDelayed(mIdleRunnable, mConsiderIdleMillis);
             }
         }
+
+        super.onScrollChanged(l, t, oldL, oldT);
     }
 
     /**
@@ -506,6 +535,11 @@ public class ScrollableLayout extends FrameLayout {
     public boolean canScrollVertically(int direction) {
         return (direction < 0 && getScrollY() > 0)
                 || (direction > 0 && mCanScrollVerticallyDelegate.canScrollVertically(direction));
+    }
+
+    @Override
+    public boolean canScrollHorizontally(int direction) {
+        return false;
     }
 
     protected int getNewY(int y) {
@@ -784,13 +818,14 @@ public class ScrollableLayout extends FrameLayout {
             //          IF direction == 1 ->
 
             final int y = getScrollY();
+            final int distance = (int) (distanceY + .5F);
 
             if (mOverScrollListener == null) {
-                scrollBy(0, (int) (distanceY + .5F));
+                scrollBy(0, distance);
                 return y != getScrollY();
             }
 
-            final int direction = Float.compare(distanceY, .0F) < 0 ? -1 : 1;
+            final int direction = distance < 0 ? -1 : 1;
 
             if (!mOverScrollStarted) {
                 mOverScrollStarted = y == 0 && direction == -1;
@@ -801,110 +836,24 @@ public class ScrollableLayout extends FrameLayout {
             if (mOverScrollStarted) {
                 // here we need to check what direction is this scroll event
                 if (direction == 1 && y == 0) {
-                    if (mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
-                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+                    if (mOverScrollListener.hasOverScroll(ScrollableLayout.this, distance)) {
+                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distance);
                         handled = true;
                     } else {
                         mOverScrollListener.clear();
                         mOverScrollStarted = false;
                     }
                 } else {
-                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
+                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distance);
                 }
             }
 
             if (!handled) {
-                scrollBy(0, (int) (distanceY + .5F));
+                scrollBy(0, distance);
                 return y != getScrollY();
             } else {
                 return true;
             }
-
-//            return false;
-
-//            boolean handled = false;
-//
-//            final int scrollY = getScrollY();
-//            if (mOverScrollListener != null) {
-//                if (!mOverScrollStarted) {
-//                    mOverScrollStarted = scrollY == 0 && distanceY < 0;
-//                }
-//                // it all depends on direction of the scroll if it's negative (from top to bottom)
-//                // we evaluate over scroll first
-//                // otherwise (from bottom to top) we scroll first
-//                if (mOverScrollStarted) {
-//                    final int direction = Float.compare(distanceY, .0F) < 0 ? -1 : 1;
-//                    if (direction < 0 && !mCanScrollVerticallyDelegate.canScrollVertically(-1)) {
-//                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
-//                        handled = true;
-//                    }
-//                }
-////                if (!mCanScrollVerticallyDelegate.canScrollVertically(distanceY < 0 ? -1 : 1)) {
-////                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
-////                }
-//            }
-//
-//            if (!handled) {
-//                scrollBy(0, (int) (distanceY + .5F));
-//                return scrollY != getScrollY();
-//            } else {
-//                return true;
-//            }
-
-//            scrollBy(0, (int) (distanceY + .5F));
-//            return scrollY != getScrollY();
-
-//            boolean handled = false;
-//
-//            if (mOverScrollListener != null) {
-//
-//                if (!mOverScrollStarted) {
-//                    mOverScrollStarted = scrollY == 0 && distanceY < 0;
-//                }
-//
-//                if (mOverScrollStarted) {
-//                    Debug.i("distcneY: %s, hasOverScroll: %s", distanceY, mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY));
-//                    if (mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
-//                        mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
-//                        handled = true;
-//                    } else {
-//                        mOverScrollListener.clear();
-//                    }
-//                }
-//
-////                if (mOverScrollStarted && mOverScrollListener.hasOverScroll(ScrollableLayout.this, distanceY)) {
-////                    // no scroll
-////                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
-////                    handled = true;
-////                }
-//            }
-//
-//            if (!handled) {
-//                scrollBy(0, (int) (distanceY + .5F));
-//                return scrollY != getScrollY();
-//            } else {
-//                return true;
-//            }
-
-//            // so, while we have overScroll, we must skip scrolling of layout itself
-//
-//            Debug.i(distanceY, mOverScrollY);
-//
-//            scrollBy(0, (int) (distanceY + .5F));
-//
-//            final int scrollYUpdated = getScrollY();
-//            if (mOverScrollListener != null) {
-//                // trigger tracking of over scroll
-//                if (scrollY == 0 && scrollYUpdated == 0) {
-//                    mOverScrollStarted = true;
-//                    mOverScrollY = distanceY;
-//                }
-//                if (mOverScrollStarted) {
-//                    mOverScrollListener.onOverScrolled(ScrollableLayout.this, distanceY);
-//                }
-//            }
-//
-//            return scrollY != scrollYUpdated;
         }
     }
 
@@ -961,8 +910,6 @@ public class ScrollableLayout extends FrameLayout {
 //                    e1.
 //                }
 //            }
-
-//            Debug.i("velocityY: %s, velocity: %d", velocityY, velocity);
 
             // if we have fling over listener and we are NOT in collapsed state -> redirect call
             // this will allow to skip unpleasant part with fling over event is dispatched a bit `off`

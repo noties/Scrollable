@@ -16,7 +16,7 @@
     <string name="sample_title_over_scroll_scale">OverScroll scale</string>
     <string name="sample_description_over_scroll_scale">Detects if over scroll is present and zooms in header (bouncy effect)</string>
 
-    <string name="sample_title_over_scroll_custom">OverScroll custom (w/ pull-to-refresh)</string>
+    <string name="sample_title_over_scroll_custom">OverScroll custom</string>
     <string name="sample_description_over_scroll_custom">Detects if over scroll is present and triggers custom pull-to-refresh behavior</string>
 
     <string name="sample_title_inside_fragment">Inside Fragment</string>

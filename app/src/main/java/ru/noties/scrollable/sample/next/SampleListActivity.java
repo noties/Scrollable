@@ -1,7 +1,5 @@
 package ru.noties.scrollable.sample.next;
 
-import android.animation.FloatEvaluator;
-import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -14,11 +12,9 @@ import android.view.Window;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.noties.ccf.CCFAnimator;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
-import ru.noties.scrollable.OnScrollChangedListener;
-import ru.noties.scrollable.OverScrollListener;
+import ru.noties.scrollable.OverScrollListenerBase;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
@@ -52,16 +48,10 @@ public class SampleListActivity extends BaseActivity {
 
         final ScrollableLayout scrollableLayout = findView(R.id.scrollable_layout);
         final RecyclerView recyclerView = findView(R.id.recycler_view);
-        final View headerContainer = findViewById(R.id.header_container);
-        final View header = findViewById(R.id.header);
+        final SampleHeaderView headerView = findView(R.id.header);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setHasFixedSize(true);
-
-        final Resources r = getResources();
-        scrollableLayout.setMaxScrollY(
-                r.getDimensionPixelSize(R.dimen.header_height) - r.getDimensionPixelSize(R.dimen.tabs_height)
-        );
 
         scrollableLayout.setCanScrollVerticallyDelegate(new CanScrollVerticallyDelegate() {
             @Override
@@ -69,30 +59,8 @@ public class SampleListActivity extends BaseActivity {
                 return recyclerView.canScrollVertically(direction);
             }
         });
-        scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        scrollableLayout.addOnScrollChangedListener(new SampleHeaderViewOnScrollChangedListener(headerView));
 
-            // todo, change to ContextCompat
-            final CCFAnimator mCCFAnimator = CCFAnimator.rgb(
-                    r.getColor(R.color.md_teal_300),
-                    r.getColor(R.color.md_teal_500)
-            );
-
-            @Override
-            public void onScrollChanged(int y, int oldY, int maxY) {
-                final float headerY;
-                final float maxHeaderY = header.getTop();
-                if (y < maxHeaderY) {
-                    headerY = .0F;
-                } else {
-                    headerY = y - maxHeaderY;
-                }
-                header.setTranslationY(headerY);
-
-                final int color = mCCFAnimator.getColor(headerY / maxHeaderY);
-                headerContainer.setBackgroundColor(color);
-                header.setBackgroundColor(color);
-            }
-        });
         scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
             @Override
             public void onFlingOver(int y, long duration) {
@@ -100,7 +68,7 @@ public class SampleListActivity extends BaseActivity {
             }
         });
         scrollableLayout.setOverScrollListener(new SampleListOverScrollListener(
-                (View) header.getParent(),
+                headerView,
                 recyclerView
         ));
 
@@ -175,13 +143,10 @@ public class SampleListActivity extends BaseActivity {
         return items;
     }
 
-    private static class SampleListOverScrollListener implements OverScrollListener {
+    private static class SampleListOverScrollListener extends OverScrollListenerBase {
 
         private final View mHeader;
         private final View mContent;
-
-        private float mDistanceY;
-        private ValueAnimator mAnimator;
 
         SampleListOverScrollListener(View header, View content) {
             mHeader = header;
@@ -189,89 +154,18 @@ public class SampleListActivity extends BaseActivity {
         }
 
         @Override
-        public void onOverScrolled(ScrollableLayout layout, float overScrollY) {
-
-            if (mAnimator != null
-                    && mAnimator.isRunning()) {
-                mAnimator.cancel();
-            }
-
-            // to abstract:
-            //  * maximum over scroll distance (getMaxScrollY() / 2)
-            //  * ratio coefficient (.33F), default .33, meaning bounds are 0.0-0.33
-            //      coefficient 1.0 means bounds 0.0-1.0
-
-            // we will use half of the maxScrollY
-            final float max = layout.getMaxScrollY() / 2.F;
-
-            mDistanceY += -overScrollY;
-            if (Float.compare(mDistanceY, max) > 0) {
-                mDistanceY = max;
-            }
-
-            // important one
-            if (mDistanceY < 0) {
-                return;
-            }
-
-            final float ratio = mDistanceY / max;
+        protected void onRatioChanged(ScrollableLayout layout, float ratio) {
             final float scale = 1.F + (.33F * ratio);
-
             mHeader.setScaleX(scale);
             mHeader.setScaleY(scale);
 
             final int headerHeight = mHeader.getHeight();
-
-            // as we scale the whole view, we are interested only in half of the
-            // scaling height (the one that goes to the bottom)
             mContent.setTranslationY(((headerHeight * scale) - headerHeight) / 2.F);
         }
 
         @Override
-        public boolean hasOverScroll(ScrollableLayout layout, float overScrollY) {
-            return Float.compare(mDistanceY, 0) > 0;
-        }
-
-        @Override
-        public void onCancelled(ScrollableLayout layout) {
-
-            if (mAnimator != null
-                    && mAnimator.isRunning()) {
-                mAnimator.cancel();
-            }
-
-            final float currentScale = mHeader.getScaleY();
-
-            // we can also check if it's > 0
-
-            final float scaleDiff = currentScale - 1.F;
-            final float max = layout.getMaxScrollY() / 2.F;
-            final float headerHeight = mHeader.getHeight();
-
-            mAnimator = ValueAnimator.ofFloat(.0F, 1.F);
-            mAnimator.setDuration(250L);
-            mAnimator.setEvaluator(new FloatEvaluator());
-            mAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-
-                    final float fraction = animation.getAnimatedFraction();
-
-                    final float scale = currentScale - (fraction * scaleDiff);
-                    mHeader.setScaleX(scale);
-                    mHeader.setScaleY(scale);
-
-                    mDistanceY = (scale - 1.F) / .33F * max;
-
-                    mContent.setTranslationY(((headerHeight * scale) - headerHeight) / 2.F);
-                }
-            });
-            mAnimator.start();
-        }
-
-        @Override
-        public void clear() {
-            mDistanceY = .0F;
+        protected int getMaxOverScrollY(ScrollableLayout layout) {
+            return layout.getMaxScrollY() / 2;
         }
     }
 }
