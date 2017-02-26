@@ -998,6 +998,8 @@ public class ScrollableLayout extends FrameLayout {
 
     private class SelfUpdateAnimationListener extends AnimatorListenerAdapter {
 
+        private final boolean mInitialValue = mSelfUpdateScroll;
+
         @Override
         public void onAnimationStart(Animator animation) {
             mSelfUpdateScroll = true;
@@ -1005,12 +1007,12 @@ public class ScrollableLayout extends FrameLayout {
 
         @Override
         public void onAnimationEnd(Animator animation) {
-            mSelfUpdateScroll = false;
+            mSelfUpdateScroll = mInitialValue;
         }
 
         @Override
         public void onAnimationCancel(Animator animation) {
-            mSelfUpdateScroll = false;
+            mSelfUpdateScroll = mInitialValue;
         }
 
     }

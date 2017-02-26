@@ -17,6 +17,7 @@ import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OverScrollListenerBase;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
+import ru.noties.scrollable.sample.next.manual.ManualControlActivity;
 import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
 import ru.noties.scrollable.sample.next.pager.fragment.FragmentPagerActivity;
 import ru.noties.scrollable.sample.next.swiperefresh.SwipeRefreshActivity;
@@ -124,7 +125,7 @@ public class SampleListActivity extends BaseActivity {
         ));
 
         items.add(new SampleListItem(
-                null,
+                ManualControlActivity.class,
                 r.getString(R.string.sample_title_manual_control),
                 r.getString(R.string.sample_description_manual_control)
         ));

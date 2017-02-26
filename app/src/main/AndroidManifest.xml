@@ -27,6 +27,7 @@
         <activity android:name=".next.pager.fragment.FragmentPagerActivity"/>
         <activity android:name=".next.overscroll.custompullrefresh.CustomOverScrollActivity"/>
         <activity android:name=".next.swiperefresh.SwipeRefreshActivity"/>
+        <activity android:name=".next.manual.ManualControlActivity"/>
 
     </application>
 
