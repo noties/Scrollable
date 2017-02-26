@@ -23,6 +23,8 @@ import ru.noties.vt.ViewTypesAdapter;
 
 public class ManualControlActivity extends BaseActivity {
 
+    private int mRecyclerViewHeight;
+
     @Override
     public void onCreate(Bundle sis) {
         super.onCreate(sis);
@@ -57,8 +59,9 @@ public class ManualControlActivity extends BaseActivity {
             public boolean onPreDraw() {
                 final boolean result;
                 if (recyclerView.getHeight() > 0) {
+                    mRecyclerViewHeight = recyclerView.getHeight();
                     final ViewGroup.LayoutParams params = recyclerView.getLayoutParams();
-                    params.height = recyclerView.getHeight() - scrollableLayout.getMaxScrollY();
+                    params.height = mRecyclerViewHeight - scrollableLayout.getMaxScrollY();
                     recyclerView.requestLayout();
                     recyclerView.getViewTreeObserver().removeOnPreDrawListener(this);
                     result = true;
@@ -72,26 +75,52 @@ public class ManualControlActivity extends BaseActivity {
         final ViewTypesAdapter<String> adapter = ViewTypesAdapter.builder(String.class)
                 .register(String.class, new ViewTypeItem())
                 .registerOnClickListener(new OnItemClickListener<String, Holder>() {
+
+                    private ValueAnimator mAnimator;
+
                     @Override
                     public void onItemClick(String item, Holder holder) {
-                        // just for the sake of brevity, do not repeat
+
                         // even number scrolls to 0
                         // odd number scrolls to maxScrollY
+
+                        // just for the sake of brevity, do not repeat
                         final int index = item.lastIndexOf('#');
                         if (index > -1) {
                             try {
                                 final int value = Integer.parseInt(item.substring(index + 1));
+
+                                final int maxScroll = scrollableLayout.getMaxScrollY();
+
+
+                                // also, important one to check if we are already at desired state
+                                // as our animation listener takes `delta` value and applies it
+                                // so, if clicked two even or odd items in a row, recyclerView height
+                                // will be not the one that is expected
+                                //
+                                // also, it's important to make sure that there is no current scrolling animation
+                                // otherwise recyclerView height will also be corrupted
+
+                                final int scrollTo;
+                                final int recyclerHeight;
                                 if ((value & 1) == 0) {
-                                    final ValueAnimator animator = scrollableLayout.animateScroll(0);
-                                    animator.setDuration(250L);
-                                    animator.addUpdateListener(new RecyclerHeightChangeListener(recyclerView, -scrollableLayout.getMaxScrollY()));
-                                    animator.start();
+                                    scrollTo = 0;
+                                    recyclerHeight = mRecyclerViewHeight - maxScroll;
                                 } else {
-                                    final ValueAnimator animator = scrollableLayout.animateScroll(scrollableLayout.getMaxScrollY());
-                                    animator.setDuration(250L);
-                                    animator.addUpdateListener(new RecyclerHeightChangeListener(recyclerView, scrollableLayout.getMaxScrollY()));
-                                    animator.start();
+                                    scrollTo = scrollableLayout.getMaxScrollY();
+                                    recyclerHeight = mRecyclerViewHeight;
                                 }
+
+                                if (scrollableLayout.getScrollY() != scrollTo) {
+                                    if (mAnimator != null && mAnimator.isRunning()) {
+                                        mAnimator.cancel();
+                                    }
+                                    mAnimator = scrollableLayout.animateScroll(scrollTo);
+                                    mAnimator.setDuration(250L);
+                                    mAnimator.addUpdateListener(new RecyclerHeightChangeListener(recyclerView, recyclerHeight));
+                                    mAnimator.start();
+                                }
+
                             } catch (NumberFormatException e) {
                                 Debug.e(e);
                             }
@@ -111,10 +140,10 @@ public class ManualControlActivity extends BaseActivity {
         private final int mRecyclerHeight;
         private final int mHeightDelta;
 
-        RecyclerHeightChangeListener(RecyclerView recyclerView, int delta) {
+        RecyclerHeightChangeListener(RecyclerView recyclerView, int endResult) {
             mRecyclerView = recyclerView;
             mRecyclerHeight = recyclerView.getHeight();
-            mHeightDelta = delta;
+            mHeightDelta = endResult - mRecyclerHeight;
         }
 
         @Override

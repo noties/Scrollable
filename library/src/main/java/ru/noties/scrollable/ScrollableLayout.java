@@ -446,7 +446,7 @@ public class ScrollableLayout extends FrameLayout {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 final float fraction = animation.getAnimatedFraction();
-                scrollTo(0, startY + (int) (diff * fraction + .5F));
+                scrollTo(0, (int) (startY + (diff * fraction) + .5F));
             }
         });
         animator.addListener(new SelfUpdateAnimationListener());

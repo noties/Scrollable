@@ -11,7 +11,7 @@
     <string name="sample_description_dialog">Dialog built with ScrollableLayout, full-screen, scroll bottom to dismiss</string>
 
     <string name="sample_title_manual_control">Manual scroll</string>
-    <string name="sample_description_manual_control">Control ScrollableLayout manually, collapses/expands only when command is given</string>
+    <string name="sample_description_manual_control">Control ScrollableLayout scroll state manually, when clicked on item with even number - expands, when clicked on odd - collapses</string>
 
     <!--<string name="sample_title_over_scroll_scale">OverScroll scale</string>-->
     <!--<string name="sample_description_over_scroll_scale">Detects if over scroll is present and zooms in header (bouncy effect)</string>-->
