@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager.fragment;
+package ru.noties.scrollable.sample.next.pager.fragment;
 
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;

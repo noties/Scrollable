@@ -18,7 +18,8 @@ import ru.noties.scrollable.OverScrollListenerBase;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.next.overscroll.custompullrefresh.CustomOverScrollActivity;
-import ru.noties.scrollable.sample.next.viewpager.fragment.FragmentPagerActivity;
+import ru.noties.scrollable.sample.next.pager.fragment.FragmentPagerActivity;
+import ru.noties.scrollable.sample.next.swiperefresh.SwipeRefreshActivity;
 import ru.noties.vt.Holder;
 import ru.noties.vt.OnItemClickListener;
 import ru.noties.vt.ViewTypesAdapter;
@@ -94,15 +95,15 @@ public class SampleListActivity extends BaseActivity {
 
         items.add(new SampleListItem(
                 FragmentPagerActivity.class,
-                r.getString(R.string.sample_title_view_pager),
-                r.getString(R.string.sample_description_view_pager))
+                r.getString(R.string.sample_title_fragment_pager),
+                r.getString(R.string.sample_description_fragment_pager))
         );
 
-        items.add(new SampleListItem(
-                null,
-                r.getString(R.string.sample_title_over_scroll_scale),
-                r.getString(R.string.sample_description_over_scroll_scale)
-        ));
+//        items.add(new SampleListItem(
+//                null,
+//                r.getString(R.string.sample_title_over_scroll_scale),
+//                r.getString(R.string.sample_description_over_scroll_scale)
+//        ));
 
         items.add(new SampleListItem(
                 CustomOverScrollActivity.class,
@@ -117,7 +118,7 @@ public class SampleListActivity extends BaseActivity {
         ));
 
         items.add(new SampleListItem(
-                null,
+                SwipeRefreshActivity.class,
                 r.getString(R.string.sample_title_swipe_refresh),
                 r.getString(R.string.sample_description_swipe_refresh)
         ));

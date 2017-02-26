@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <string name="sample_title_view_pager">ViewPager</string>
-    <string name="sample_description_view_pager">Usage of ScrollableLayout with ViewPager and Fragments and sticky tabs. Layouts used: RecyclerView, ListView, ScrollView, WebView</string>
+    <string name="sample_title_fragment_pager">FragmentPager</string>
+    <string name="sample_description_fragment_pager">Usage of ScrollableLayout with ViewPager and Fragments and sticky tabs. Layouts used: RecyclerView, ListView, ScrollView, WebView</string>
 
     <string name="sample_title_swipe_refresh">SwipeRefreshLayout</string>
     <string name="sample_description_swipe_refresh">Usage of ScrollableLayout inside SwipeRefreshLayout</string>
@@ -13,8 +13,8 @@
     <string name="sample_title_manual_control">Manual scroll</string>
     <string name="sample_description_manual_control">Control ScrollableLayout manually, collapses/expands only when command is given</string>
 
-    <string name="sample_title_over_scroll_scale">OverScroll scale</string>
-    <string name="sample_description_over_scroll_scale">Detects if over scroll is present and zooms in header (bouncy effect)</string>
+    <!--<string name="sample_title_over_scroll_scale">OverScroll scale</string>-->
+    <!--<string name="sample_description_over_scroll_scale">Detects if over scroll is present and zooms in header (bouncy effect)</string>-->
 
     <string name="sample_title_over_scroll_custom">OverScroll custom</string>
     <string name="sample_description_over_scroll_custom">Detects if over scroll is present and triggers custom pull-to-refresh behavior</string>

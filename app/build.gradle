@@ -34,7 +34,7 @@ android {
 
 dependencies {
 
-    final def supportVersion = '25.1.1'
+    final def supportVersion = '25.2.0'
 
 //    compile "com.android.support:appcompat-v7:${supportVersion}"
     compile "com.android.support:recyclerview-v7:${supportVersion}"

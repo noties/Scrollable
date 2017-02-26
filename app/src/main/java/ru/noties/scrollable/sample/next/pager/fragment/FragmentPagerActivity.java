@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager.fragment;
+package ru.noties.scrollable.sample.next.pager.fragment;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -12,12 +12,14 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.List;
 
+import ru.noties.ccf.CCFAnimator;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.next.BaseActivity;
+import ru.noties.scrollable.sample.next.SampleHeaderView;
 import ru.noties.scrollable.sample.next.TabsLayout;
 
 public class FragmentPagerActivity extends BaseActivity {
@@ -34,7 +36,7 @@ public class FragmentPagerActivity extends BaseActivity {
         setContentView(R.layout.activity_sample_view_pager);
 
         final ScrollableLayout scrollableLayout = findView(R.id.scrollable_layout);
-        final View header = findViewById(R.id.header);
+        final SampleHeaderView header = findView(R.id.header);
         final ViewPager viewPager = findView(R.id.view_pager);
         final TabsLayout tabsLayout = findView(R.id.tabs);
 
@@ -64,7 +66,10 @@ public class FragmentPagerActivity extends BaseActivity {
             }
         });
 
-        scrollableLayout.setOnScrollChangedListener(new OnScrollChangedListener() {
+        scrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
+
+            final CCFAnimator mAnimator = CCFAnimator.rgb(header.getExpandedColor(), header.getCollapsedColor());
+
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
 
@@ -79,6 +84,9 @@ public class FragmentPagerActivity extends BaseActivity {
 
                 // parallax effect for collapse/expand
                 header.setTranslationY(y / 2);
+                final float ratio = (float) y / maxY;
+                header.setBackgroundColor(mAnimator.getColor(ratio));
+                header.getTextView().setAlpha(1.F - ratio);
             }
         });
     }

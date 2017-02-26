@@ -43,4 +43,11 @@
         <item name="android:layout_gravity">center</item>
     </style>
 
+    <style name="RecyclerViewStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:id">@id/recycler_view</item>
+    </style>
+
 </resources>

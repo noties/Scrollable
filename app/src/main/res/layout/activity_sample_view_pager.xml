@@ -5,22 +5,17 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    app:scrollable_maxScroll="@dimen/header_height"
-    app:scrollable_defaultCloseUp="true">
+    app:scrollable_defaultCloseUp="true"
+    app:scrollable_maxScroll="@dimen/header_height">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/header"
-            android:layout_width="match_parent"
-            android:layout_height="@dimen/header_height"
-            android:background="@color/md_green_200"
-            android:gravity="center"
-            android:text="@string/sample_title_view_pager"
-            android:textAppearance="?android:attr/textAppearanceLarge"/>
+        <ru.noties.scrollable.sample.next.SampleHeaderView
+            style="@style/HeaderStyle"
+            app:shv_title="@string/sample_title_fragment_pager"/>
 
         <ru.noties.scrollable.sample.next.TabsLayout
             android:id="@+id/tabs"

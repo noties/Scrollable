@@ -1,4 +1,4 @@
-package ru.noties.scrollable.sample.next.viewpager.fragment;
+package ru.noties.scrollable.sample.next.pager.fragment;
 
 import android.content.Context;
 import android.os.Bundle;
