@@ -465,6 +465,7 @@ public class ScrollableLayout extends FrameLayout {
             }
         });
         animator.addListener(new SelfUpdateAnimationListener());
+        animator.addListener(new CancelAnimatorOnDetachListener(this, animator));
         return animator;
     }
 
@@ -568,6 +569,8 @@ public class ScrollableLayout extends FrameLayout {
         final int direction = y - currentY;
         final boolean isScrollingBottomTop = direction < 0;
 
+//        Debug.i(isScrollingBottomTop, direction);
+
         if (mCanScrollVerticallyDelegate != null) {
 
             if (isScrollingBottomTop) {
@@ -583,6 +586,7 @@ public class ScrollableLayout extends FrameLayout {
                 // we are adding support for the scrolling view in the `header` section (first view)
                 // we just check if header can scroll in top-bottom direction (but only if we are not dragging draggable view)
 
+//                Debug.i(mIsDraggingDraggable, mSelfUpdateScroll, canHeaderScroll(direction));
                 // else check if we are at max scroll
                 if ((!mIsDraggingDraggable && !mSelfUpdateScroll && canHeaderScroll(direction))
                         || (currentY == mMaxScrollY && !mCanScrollVerticallyDelegate.canScrollVertically(direction))) {
@@ -801,6 +805,7 @@ public class ScrollableLayout extends FrameLayout {
 
             mCloseUpAnimator.setDuration(duration);
             mCloseUpAnimator.addListener(new SelfUpdateAnimationListener());
+            mCloseUpAnimator.addListener(new CancelAnimatorOnDetachListener(ScrollableLayout.this, mCloseUpAnimator));
 
             if (mCloseAnimatorConfigurator != null) {
                 mCloseAnimatorConfigurator.configure(mCloseUpAnimator);
@@ -1017,6 +1022,57 @@ public class ScrollableLayout extends FrameLayout {
         }
 
     }
+
+    private static class CancelAnimatorOnDetachListener extends AnimatorListenerAdapter implements OnAttachStateChangeListener {
+
+        private final View mView;
+        private final ValueAnimator mAnimator;
+
+        private boolean mSubscribed;
+
+        private CancelAnimatorOnDetachListener(View view, ValueAnimator animator) {
+            mView = view;
+            mAnimator = animator;
+        }
+
+        @Override
+        public void onViewAttachedToWindow(View v) {
+            // no op
+        }
+
+        @Override
+        public void onViewDetachedFromWindow(View v) {
+            if (mAnimator != null
+                    && mAnimator.isRunning()) {
+                mAnimator.cancel();
+            }
+            unsubscribe();
+        }
+
+        @Override
+        public void onAnimationStart(Animator animation) {
+            mSubscribed = true;
+            mView.addOnAttachStateChangeListener(this);
+        }
+
+        @Override
+        public void onAnimationCancel(Animator animation) {
+            unsubscribe();
+        }
+
+        @Override
+        public void onAnimationEnd(Animator animation) {
+            unsubscribe();
+        }
+
+        private void unsubscribe() {
+            if (mSubscribed) {
+                mView.removeOnAttachStateChangeListener(this);
+                mSubscribed = false;
+            }
+        }
+    }
+
 
     @Override
     public Parcelable onSaveInstanceState() {

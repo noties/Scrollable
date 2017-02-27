@@ -1,11 +1,14 @@
 package ru.noties.scrollable.sample.next.scrollheader;
 
 import android.os.Bundle;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
+import ru.noties.ccf.CCFAnimator;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
+import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.next.BaseActivity;
@@ -44,6 +47,20 @@ public class ScrollHeaderActivity extends BaseActivity {
             @Override
             public boolean canScrollVertically(int direction) {
                 return contentRecyclerView.canScrollVertically(direction);
+            }
+        });
+
+        scrollableLayout.addOnScrollChangedListener(new OnScrollChangedListener() {
+
+            final CCFAnimator mCCFAnimator = CCFAnimator.rgb(
+                    ContextCompat.getColor(ScrollHeaderActivity.this, R.color.md_teal_300),
+                    ContextCompat.getColor(ScrollHeaderActivity.this, R.color.md_teal_500)
+            );
+
+            @Override
+            public void onScrollChanged(int y, int oldY, int maxY) {
+                final float ratio = (float) y / maxY;
+                headerRecyclerView.setBackgroundColor(mCCFAnimator.getColor(ratio));
             }
         });
     }
