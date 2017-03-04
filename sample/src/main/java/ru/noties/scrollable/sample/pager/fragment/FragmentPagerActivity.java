@@ -82,10 +82,10 @@ public class FragmentPagerActivity extends BaseActivity {
                 tabsLayout.setTranslationY(tabsTranslationY);
 
                 // parallax effect for collapse/expand
-                header.setTranslationY(y / 2);
                 final float ratio = (float) y / maxY;
                 header.setBackgroundColor(mAnimator.getColor(ratio));
                 header.getTextView().setAlpha(1.F - ratio);
+                header.getTextView().setTranslationY(y / 2);
             }
         });
     }
