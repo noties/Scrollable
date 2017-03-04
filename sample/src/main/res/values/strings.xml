@@ -1,0 +1,13 @@
+<resources>
+
+    <string name="app_name">Scrollable sample</string>
+
+    <string name="scrollable_dialog_title">Pick something</string>
+
+    <string name="fragment_pager_tab_list_view">ListView</string>
+    <string name="fragment_pager_tab_recycler_view">RecyclerView</string>
+    <string name="fragment_pager_tab_scroll_view">ScrollView</string>
+    <string name="fragment_pager_tab_web_view">WebView</string>
+    <string name="fragment_pager_tab_edit_text">EditText</string>
+
+</resources>

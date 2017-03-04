@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ru.noties.scrollable.ScrollableLayout
+    android:id="@+id/scrollable_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:scrollable_defaultCloseUp="true"
+    app:scrollable_maxScroll="@dimen/header_height">
+
+    <ru.noties.scrollable.sample.SampleHeaderView
+        style="@style/HeaderStyle"
+        app:shv_title="@string/sample_title_colorful"/>
+
+    <ru.noties.scrollable.sample.TabsLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tabs_height"
+        android:background="@color/md_teal_500"/>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/view_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="@dimen/tabs_height"
+        android:theme="@style/GreyOverScroll"/>
+
+</ru.noties.scrollable.ScrollableLayout>

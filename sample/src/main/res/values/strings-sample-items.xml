@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="sample_title_fragment_pager">FragmentPager</string>
+    <string name="sample_description_fragment_pager">Usage of ScrollableLayout with ViewPager and Fragments and sticky tabs. Layouts used: RecyclerView, ListView, ScrollView, WebView</string>
+
+    <string name="sample_title_swipe_refresh">SwipeRefreshLayout</string>
+    <string name="sample_description_swipe_refresh">Usage of ScrollableLayout inside SwipeRefreshLayout</string>
+
+    <string name="sample_title_dialog">Scrollable Dialog</string>
+    <string name="sample_description_dialog">Dialog built with ScrollableLayout, full-screen, scroll bottom to dismiss</string>
+
+    <string name="sample_title_manual_control">Manual scroll</string>
+    <string name="sample_description_manual_control">Control ScrollableLayout scroll state manually, when clicked on item with even number - expands, when clicked on odd - collapses</string>
+
+    <string name="sample_title_over_scroll_custom">OverScroll custom</string>
+    <string name="sample_description_over_scroll_custom">Detects if over scroll is present and triggers custom pull-to-refresh behavior</string>
+
+    <string name="sample_title_inside_fragment">Inside Fragment</string>
+    <string name="sample_description_inside_fragment">Usage of ScrollableLayout inside Fragment with ViewPager and child FragmentManager</string>
+
+    <string name="sample_title_header_view_pager">Header ViewPager</string>
+    <string name="sample_description_header_view_pager">ScrollableLayout with ViewPager header</string>
+
+    <string name="sample_title_scrollable_header">Scrollable header</string>
+    <string name="sample_description_scrollable_header">A header that is a scroll container (RecyclerView)</string>
+
+    <string name="sample_title_colorful">Colorful</string>
+    <string name="sample_description_colorful">Usage with changing colors depending on selected tab. Used ViewPager with raw views (without fragments)</string>
+
+</resources>
