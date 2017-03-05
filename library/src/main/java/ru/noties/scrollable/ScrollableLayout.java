@@ -1077,6 +1077,7 @@ public class ScrollableLayout extends FrameLayout {
     	final ScrollableLayoutSavedState savedState = new ScrollableLayoutSavedState(superState);
 
         savedState.scrollY = getScrollY();
+        savedState.autoMaxScroll = mAutoMaxScroll;
 
     	return savedState;
     }
@@ -1093,16 +1094,20 @@ public class ScrollableLayout extends FrameLayout {
     	super.onRestoreInstanceState(in.getSuperState());
 
         setScrollY(in.scrollY);
+        mAutoMaxScroll = in.autoMaxScroll;
+        processAutoMaxScroll(mAutoMaxScroll);
     }
 
     private static class ScrollableLayoutSavedState extends BaseSavedState {
 
         int scrollY;
+        boolean autoMaxScroll;
 
     	ScrollableLayoutSavedState(Parcel source) {
     		super(source);
 
             scrollY = source.readInt();
+            autoMaxScroll = source.readByte() == (byte) 1;
     	}
 
     	ScrollableLayoutSavedState(Parcelable superState) {
@@ -1114,6 +1119,7 @@ public class ScrollableLayout extends FrameLayout {
     		super.writeToParcel(out, flags);
 
             out.writeInt(scrollY);
+            out.writeByte(autoMaxScroll ? (byte) 1 : (byte) 0);
     	}
 
     	public static final Creator<ScrollableLayoutSavedState> CREATOR
