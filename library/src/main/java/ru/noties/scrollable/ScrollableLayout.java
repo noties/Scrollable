@@ -479,7 +479,7 @@ public class ScrollableLayout extends FrameLayout {
 
             // cancel if running
             if (mManualScrollAnimator.isRunning()) {
-                mManualScrollAnimator.cancel();
+                mManualScrollAnimator.end();
             }
         }
 
@@ -844,7 +844,7 @@ public class ScrollableLayout extends FrameLayout {
                 }
 
                 if (mCloseUpAnimator.isRunning()) {
-                    mCloseUpAnimator.cancel();
+                    mCloseUpAnimator.end();
                 }
             }
 
