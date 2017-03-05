@@ -747,8 +747,14 @@ public class ScrollableLayout extends FrameLayout {
             removeCallbacks(mIdleRunnable);
         }
 
-        if (mCloseUpAnimator != null && mCloseUpAnimator.isRunning()) {
-            mCloseUpAnimator.cancel();
+        if (mCloseUpAnimator != null
+                && mCloseUpAnimator.isRunning()) {
+
+            if (mCloseUpUpdateListener != null) {
+                mCloseUpAnimator.removeUpdateListener(mCloseUpUpdateListener);
+            }
+
+            mCloseUpAnimator.end();
         }
     }
 
@@ -801,7 +807,7 @@ public class ScrollableLayout extends FrameLayout {
                 final int diff = y - nowY;
 
                 if (diff != 0) {
-                    scrollBy(0, diff);
+                    scrollTo(0, y);
                 }
 
                 post(this);
@@ -906,7 +912,7 @@ public class ScrollableLayout extends FrameLayout {
             final int distance = (int) (distanceY + .5F);
 
             if (mOverScrollListener == null) {
-                scrollBy(0, distance);
+                scrollTo(0, y + distance);
                 return y != getScrollY();
             }
 
@@ -934,7 +940,7 @@ public class ScrollableLayout extends FrameLayout {
             }
 
             if (!handled) {
-                scrollBy(0, distance);
+                scrollTo(0, y + distance);
                 return y != getScrollY();
             } else {
                 return true;
