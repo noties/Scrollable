@@ -16,8 +16,8 @@ import ru.noties.scrollable.CanScrollVerticallyDelegate;
 import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
-import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.BaseActivity;
+import ru.noties.scrollable.sample.R;
 import ru.noties.scrollable.sample.SampleHeaderView;
 import ru.noties.scrollable.sample.TabsLayout;
 
@@ -71,6 +71,8 @@ public class FragmentPagerActivity extends BaseActivity {
 
             @Override
             public void onScrollChanged(int y, int oldY, int maxY) {
+
+//                Debug.i("y: %s, oldY: %s, maxY: %s", y, oldY, maxY);
 
                 final float tabsTranslationY;
                 if (y < maxY) {

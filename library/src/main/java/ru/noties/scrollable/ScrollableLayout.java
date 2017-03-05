@@ -24,9 +24,6 @@ import android.widget.FrameLayout;
 import java.util.ArrayList;
 import java.util.List;
 
-import ru.noties.debug.AndroidLogDebugOutput;
-import ru.noties.debug.Debug;
-
 /**
  * <p>
  * This is the main {@link android.view.ViewGroup} for implementing Scrollable.
@@ -114,13 +111,6 @@ import ru.noties.debug.Debug;
  * Created by Dimitry Ivanov (mail@dimitryivanov.ru) on 28.03.2015.
  */
 public class ScrollableLayout extends FrameLayout {
-
-    // todo
-    static {
-        Debug.init(new AndroidLogDebugOutput(true));
-    }
-
-    // todo, track created ValueAnimators and unsubscribe onDetach
 
     private static final long DEFAULT_IDLE_CLOSE_UP_ANIMATION = 200L;
     private static final int DEFAULT_CONSIDER_IDLE_MILLIS = 100;
@@ -303,6 +293,8 @@ public class ScrollableLayout extends FrameLayout {
      */
     public void setMaxScrollY(int maxY) {
         this.mMaxScrollY = maxY;
+        // disable autoMaxScroll if value was set manually
+        processAutoMaxScroll(false);
     }
 
     /**
@@ -569,8 +561,6 @@ public class ScrollableLayout extends FrameLayout {
         final int direction = y - currentY;
         final boolean isScrollingBottomTop = direction < 0;
 
-//        Debug.i(isScrollingBottomTop, direction);
-
         if (mCanScrollVerticallyDelegate != null) {
 
             if (isScrollingBottomTop) {
@@ -586,7 +576,6 @@ public class ScrollableLayout extends FrameLayout {
                 // we are adding support for the scrolling view in the `header` section (first view)
                 // we just check if header can scroll in top-bottom direction (but only if we are not dragging draggable view)
 
-//                Debug.i(mIsDraggingDraggable, mSelfUpdateScroll, canHeaderScroll(direction));
                 // else check if we are at max scroll
                 if ((!mIsDraggingDraggable && !mSelfUpdateScroll && canHeaderScroll(direction))
                         || (currentY == mMaxScrollY && !mCanScrollVerticallyDelegate.canScrollVertically(direction))) {
@@ -919,8 +908,12 @@ public class ScrollableLayout extends FrameLayout {
 
             // if we have fling over listener and we are NOT in collapsed state -> redirect call
             // this will allow to skip unpleasant part with fling over event is dispatched a bit `off`
-            // also..
-            if (!mIsDraggingDraggable && mOnFlingOverListener != null && mMaxScrollY != getScrollY()) {
+            // also.. we need to make sure that scrolling content cannot be scrolled
+            if (!mIsDraggingDraggable
+                    && mOnFlingOverListener != null
+                    && mMaxScrollY != getScrollY()
+                    && velocity > 0
+                    && mCanScrollVerticallyDelegate.canScrollVertically(1)) {
 
                 final int maxPossibleFinalY;
                 final int duration;
