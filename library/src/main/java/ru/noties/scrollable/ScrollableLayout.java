@@ -752,18 +752,18 @@ public class ScrollableLayout extends FrameLayout {
         }
     }
 
-    @Override
-    public void computeScroll() {
-        if (mScroller.computeScrollOffset()) {
-            final int oldY = getScrollY();
-            final int nowY = mScroller.getCurrY();
-            scrollTo(0, nowY);
-            if (oldY != nowY) {
-                onScrollChanged(0, getScrollY(), 0, oldY);
-            }
-            postInvalidate();
-        }
-    }
+//    @Override
+//    public void computeScroll() {
+//        if (mScroller.computeScrollOffset()) {
+//            final int oldY = getScrollY();
+//            final int nowY = mScroller.getCurrY();
+//            scrollTo(0, nowY);
+//            if (oldY != nowY) {
+//                onScrollChanged(0, getScrollY(), 0, oldY);
+//            }
+//            postInvalidate();
+//        }
+//    }
 
     @Override
     protected int computeVerticalScrollRange() {

@@ -52,5 +52,15 @@ dependencies {
 }
 
 if (project.hasProperty('release')) {
+    // check if we removed debug library when releasing
+    final def dependencies = project.configurations.getByName('compile')?.dependencies
+    if (dependencies) {
+        dependencies.forEach({ dependency ->
+            if ('ru.noties' == dependency.group
+                    && 'debug' == dependency.name) {
+                throw new RuntimeException('Remove `debug` library before releasing')
+            }
+        })
+    }
     apply from: 'https://raw.githubusercontent.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
 }
