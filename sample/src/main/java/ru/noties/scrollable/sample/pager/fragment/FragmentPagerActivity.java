@@ -41,13 +41,6 @@ public class FragmentPagerActivity extends BaseActivity {
         final ViewPager viewPager = findView(R.id.view_pager);
         final TabsLayout tabsLayout = findView(R.id.tabs);
 
-//        {
-//// returns ValueAnimator, that can be configured as desired
-//scrollableLayout.animateScroll(0)
-//        .setDuration(250L)
-//        .start();
-//        }
-
         final FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager(), items(getApplicationContext()));
         viewPager.setAdapter(adapter);
         tabsLayout.setViewPager(viewPager);

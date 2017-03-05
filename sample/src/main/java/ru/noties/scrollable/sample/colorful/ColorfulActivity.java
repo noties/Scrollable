@@ -23,6 +23,7 @@ import java.util.List;
 
 import ru.noties.ccf.CCFAnimator;
 import ru.noties.scrollable.CanScrollVerticallyDelegate;
+import ru.noties.scrollable.OnFlingOverListener;
 import ru.noties.scrollable.OnScrollChangedListener;
 import ru.noties.scrollable.ScrollableLayout;
 import ru.noties.scrollable.sample.R;
@@ -161,6 +162,17 @@ public class ColorfulActivity extends BaseActivity {
         });
 
         scrollableLayout.setOverScrollListener(new ColorfulOverScrollListener(sampleHeaderView, viewPager, tabsLayout));
+
+        scrollableLayout.setOnFlingOverListener(new OnFlingOverListener() {
+            @Override
+            public void onFlingOver(int y, long duration) {
+                final View view = currentView.currentView();
+                if (view != null) {
+                    // we are using RecyclerView only, so it's safe to cast
+                    ((RecyclerView) view).smoothScrollBy(0, y);
+                }
+            }
+        });
     }
 
     private static List<Item> viewPagerItems(final Context context) {
