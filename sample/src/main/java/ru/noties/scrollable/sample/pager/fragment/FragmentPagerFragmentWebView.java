@@ -27,7 +27,7 @@ public class FragmentPagerFragmentWebView extends FragmentPagerFragment {
         mWebView.post(new Runnable() {
             @Override
             public void run() {
-                mWebView.loadUrl("https://github.com/noties/Scrollable");
+                mWebView.loadUrl("https://github.com/noties/Scrollable/tree/develop");
             }
         });
     }
