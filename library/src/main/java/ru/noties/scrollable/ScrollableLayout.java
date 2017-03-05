@@ -3,7 +3,6 @@ package ru.noties.scrollable;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.FloatEvaluator;
-import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -11,7 +10,6 @@ import android.graphics.Rect;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.AttributeSet;
-import android.util.Property;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -134,7 +132,9 @@ public class ScrollableLayout extends FrameLayout {
     private MotionEventHook mMotionEventHook;
 
     private CloseUpAlgorithm mCloseUpAlgorithm;
-    private ObjectAnimator mCloseUpAnimator;
+
+    private ValueAnimator mCloseUpAnimator;
+    private ValueAnimator.AnimatorUpdateListener mCloseUpUpdateListener;
 
     private boolean mSelfUpdateScroll;
     private boolean mSelfUpdateFling;
@@ -165,6 +165,10 @@ public class ScrollableLayout extends FrameLayout {
 
     private int mScrollingHeaderId;
     private View mScrollingHeader;
+
+    // ValueAnimator used to animate between scroll states
+    private ValueAnimator mManualScrollAnimator;
+    private ValueAnimator.AnimatorUpdateListener mManualScrollUpdateListener;
 
     public ScrollableLayout(Context context) {
         super(context);
@@ -256,6 +260,23 @@ public class ScrollableLayout extends FrameLayout {
             }
         }
         mScrollingHeader = scrollingHeader;
+    }
+
+    @Override
+    protected void onDetachedFromWindow() {
+
+        // cancel running animators
+        if (mManualScrollAnimator != null
+                && mManualScrollAnimator.isRunning()) {
+            mManualScrollAnimator.cancel();
+        }
+
+        if (mCloseUpAnimator != null
+                && mCloseUpAnimator.isRunning()) {
+            mCloseUpAnimator.cancel();
+        }
+
+        super.onDetachedFromWindow();
     }
 
     /**
@@ -444,21 +465,46 @@ public class ScrollableLayout extends FrameLayout {
      */
     public ValueAnimator animateScroll(final int scrollY) {
 
-        final int startY = getScrollY();
-        final int diff = scrollY - startY;
+        // create an instance of this animator that is shared between calls
+        if (mManualScrollAnimator == null) {
+            mManualScrollAnimator = ValueAnimator.ofFloat(.0F, 1.F);
+            mManualScrollAnimator.setEvaluator(new FloatEvaluator());
+            mManualScrollAnimator.addListener(new SelfUpdateAnimationListener());
+        } else {
 
-        final ValueAnimator animator = ValueAnimator.ofFloat(.0F, 1.F);
-        animator.setEvaluator(new FloatEvaluator());
-        animator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            // unregister our update listener
+            if (mManualScrollUpdateListener != null) {
+                mManualScrollAnimator.removeUpdateListener(mManualScrollUpdateListener);
+            }
+
+            // cancel if running
+            if (mManualScrollAnimator.isRunning()) {
+                mManualScrollAnimator.cancel();
+            }
+        }
+
+        final int y;
+        if (scrollY < 0) {
+            y = 0;
+        } else if (scrollY > mMaxScrollY) {
+            y = mMaxScrollY;
+        } else {
+            y = scrollY;
+        }
+
+        final int startY = getScrollY();
+        final int diff = y - startY;
+
+        mManualScrollUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
             @Override
             public void onAnimationUpdate(ValueAnimator animation) {
                 final float fraction = animation.getAnimatedFraction();
                 scrollTo(0, (int) (startY + (diff * fraction) + .5F));
             }
-        });
-        animator.addListener(new SelfUpdateAnimationListener());
-        animator.addListener(new CancelAnimatorOnDetachListener(this, animator));
-        return animator;
+        };
+        mManualScrollAnimator.addUpdateListener(mManualScrollUpdateListener);
+
+        return mManualScrollAnimator;
     }
 
     /**
@@ -786,15 +832,38 @@ public class ScrollableLayout extends FrameLayout {
                 return;
             }
 
-            mCloseUpAnimator = ObjectAnimator.ofInt(ScrollableLayout.this, CLOSE_UP_ANIMATION_PROPERTY, nowY, endY);
+
+            if (mCloseUpAnimator == null) {
+                mCloseUpAnimator = ValueAnimator.ofFloat(.0F, 1.F);
+                mCloseUpAnimator.setEvaluator(new FloatEvaluator());
+                mCloseUpAnimator.addListener(new SelfUpdateAnimationListener());
+            } else {
+
+                if (mCloseUpUpdateListener != null) {
+                    mCloseUpAnimator.removeUpdateListener(mCloseUpUpdateListener);
+                }
+
+                if (mCloseUpAnimator.isRunning()) {
+                    mCloseUpAnimator.cancel();
+                }
+            }
+
+            final int diff = endY - nowY;
+
+            mCloseUpUpdateListener = new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    final float fraction = animation.getAnimatedFraction();
+                    scrollTo(0, (int) (nowY + (diff * fraction) + .5F));
+                }
+            };
+            mCloseUpAnimator.addUpdateListener(mCloseUpUpdateListener);
 
             final long duration = mCloseUpIdleAnimationTime != null
                     ? mCloseUpIdleAnimationTime.compute(ScrollableLayout.this, nowY, endY, mMaxScrollY)
                     : DEFAULT_IDLE_CLOSE_UP_ANIMATION;
 
             mCloseUpAnimator.setDuration(duration);
-            mCloseUpAnimator.addListener(new SelfUpdateAnimationListener());
-            mCloseUpAnimator.addListener(new CancelAnimatorOnDetachListener(ScrollableLayout.this, mCloseUpAnimator));
 
             if (mCloseAnimatorConfigurator != null) {
                 mCloseAnimatorConfigurator.configure(mCloseUpAnimator);
@@ -981,20 +1050,6 @@ public class ScrollableLayout extends FrameLayout {
         void apply(MotionEvent event);
     }
 
-    private static final Property<ScrollableLayout, Integer> CLOSE_UP_ANIMATION_PROPERTY
-            = new Property<ScrollableLayout, Integer>(Integer.class, "scrollY") {
-
-        @Override
-        public Integer get(ScrollableLayout object) {
-            return object.getScrollY();
-        }
-
-        @Override
-        public void set(final ScrollableLayout layout, final Integer value) {
-            layout.setScrollY(value);
-        }
-    };
-
     private class SelfUpdateAnimationListener extends AnimatorListenerAdapter {
 
         private final boolean mInitialValue = mSelfUpdateScroll;
@@ -1015,57 +1070,6 @@ public class ScrollableLayout extends FrameLayout {
         }
 
     }
-
-    private static class CancelAnimatorOnDetachListener extends AnimatorListenerAdapter implements OnAttachStateChangeListener {
-
-        private final View mView;
-        private final ValueAnimator mAnimator;
-
-        private boolean mSubscribed;
-
-        private CancelAnimatorOnDetachListener(View view, ValueAnimator animator) {
-            mView = view;
-            mAnimator = animator;
-        }
-
-        @Override
-        public void onViewAttachedToWindow(View v) {
-            // no op
-        }
-
-        @Override
-        public void onViewDetachedFromWindow(View v) {
-            if (mAnimator != null
-                    && mAnimator.isRunning()) {
-                mAnimator.cancel();
-            }
-            unsubscribe();
-        }
-
-        @Override
-        public void onAnimationStart(Animator animation) {
-            mSubscribed = true;
-            mView.addOnAttachStateChangeListener(this);
-        }
-
-        @Override
-        public void onAnimationCancel(Animator animation) {
-            unsubscribe();
-        }
-
-        @Override
-        public void onAnimationEnd(Animator animation) {
-            unsubscribe();
-        }
-
-        private void unsubscribe() {
-            if (mSubscribed) {
-                mView.removeOnAttachStateChangeListener(this);
-                mSubscribed = false;
-            }
-        }
-    }
-
 
     @Override
     public Parcelable onSaveInstanceState() {

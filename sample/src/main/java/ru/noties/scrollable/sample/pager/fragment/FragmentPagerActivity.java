@@ -32,12 +32,21 @@ public class FragmentPagerActivity extends BaseActivity {
     public void onCreate(Bundle sis) {
         super.onCreate(sis);
 
+
+
         setContentView(R.layout.activity_fragment_pager);
 
         final ScrollableLayout scrollableLayout = findView(R.id.scrollable_layout);
         final SampleHeaderView header = findView(R.id.header);
         final ViewPager viewPager = findView(R.id.view_pager);
         final TabsLayout tabsLayout = findView(R.id.tabs);
+
+//        {
+//// returns ValueAnimator, that can be configured as desired
+//scrollableLayout.animateScroll(0)
+//        .setDuration(250L)
+//        .start();
+//        }
 
         final FragmentPagerAdapter adapter = new FragmentPagerAdapter(getSupportFragmentManager(), items(getApplicationContext()));
         viewPager.setAdapter(adapter);
