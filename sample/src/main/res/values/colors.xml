@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="white">#ffffff</color>
+    <color name="white_disabled">#9bffffff</color>
+
+    <color name="dialog_placeholder_color">#aa000000</color>
+
+    <color name="scrollable_dialog_status_bar_color">#142f2c</color>
+
+    <!--<color name="color_1">#FFffcdd2</color>-->
+    <!--<color name="color_2">#FFf8bbd0</color>-->
+    <!--<color name="color_3">#FFe1bee7</color>-->
+    <!--<color name="color_4">#FFbbdefb</color>-->
+    <!--<color name="color_5">#FFf0f4c3</color>-->
+    <!--<color name="color_6">#FFffe0b2</color>-->
+    <!--<color name="color_7">#FFd7ccc8</color>-->
+    <!--<color name="color_8">#FFcfd8dc</color>-->
+
+</resources>

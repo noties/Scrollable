@@ -1,0 +1,57 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="BaseTheme">
+        <!-- Customize your theme here. -->
+        <item name="android:windowBackground">@color/md_grey_50</item>
+    </style>
+
+    <style name="BaseTheme" parent="android:Theme.Holo.Light.NoActionBar">
+
+    </style>
+
+    <style name="ScrollableDialogStyle">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:colorBackgroundCacheHint">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowAnimationStyle">@style/ScrollableDialogAnimations</item>
+    </style>
+
+    <style name="ScrollableDialogAnimations">
+        <item name="android:windowEnterAnimation">@anim/fade_in</item>
+        <item name="android:windowExitAnimation">@anim/fade_out</item>
+    </style>
+
+    <style name="HeaderStyle">
+        <item name="android:id">@id/header</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/header_height</item>
+        <item name="android:background">@color/md_teal_300</item>
+        <item name="shv_expandedColor">@color/md_teal_300</item>
+        <item name="shv_collapsedColor">@color/md_teal_500</item>
+    </style>
+
+    <style name="HeaderTitleStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">@dimen/header_title_height</item>
+        <item name="android:textColor">@color/white_disabled</item>
+        <item name="android:textSize">30sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:layout_gravity">center</item>
+    </style>
+
+    <style name="RecyclerViewStyle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:scrollbars">vertical</item>
+        <item name="android:id">@id/recycler_view</item>
+    </style>
+
+    <style name="GreyOverScrollBase"/>
+
+    <style name="GreyOverScroll" parent="GreyOverScrollBase"/>
+
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="SampleHeaderView">
+        <attr name="shv_title" format="string"/>
+        <attr name="shv_expandedColor" format="color"/>
+        <attr name="shv_collapsedColor" format="color"/>
+    </declare-styleable>
+
+</resources>

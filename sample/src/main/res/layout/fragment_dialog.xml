@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ru.noties.scrollable.ScrollableLayout
+    android:id="@+id/scrollable_layout"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dialog_placeholder_color">
+
+    <View
+        android:id="@+id/dialog_placeholder"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="@dimen/tabs_height"
+        android:focusable="true"
+        android:focusableInTouchMode="true"/>
+
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/tabs_height"
+        android:background="@color/white"
+        android:gravity="center_vertical"
+        android:padding="16dip"
+        android:text="@string/scrollable_dialog_title"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#FF666666"
+        android:textStyle="bold"/>
+
+    <android.support.v7.widget.RecyclerView
+        style="@style/RecyclerViewStyle"
+        android:layout_marginTop="@dimen/tabs_height"
+        android:background="@color/white"/>
+
+</ru.noties.scrollable.ScrollableLayout>

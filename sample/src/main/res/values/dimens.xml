@@ -1,0 +1,10 @@
+<resources>
+
+    <dimen name="header_height">200dip</dimen>
+    <dimen name="tabs_height">64dip</dimen>
+
+    <dimen name="header_scrollable_max_scroll">136dip</dimen>
+    <dimen name="header_title_height">64dip</dimen>
+    <dimen name="custom_over_scroll_height">96dip</dimen>
+
+</resources>

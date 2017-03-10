@@ -1,11 +1,8 @@
 package ru.noties.scrollable;
 
-import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.view.animation.Interpolator;
 
-/**
- * Created by Dimitry Ivanov on 23.05.2015.
- */
 public class InterpolatorCloseUpAnimatorConfigurator implements CloseUpAnimatorConfigurator {
 
     private final Interpolator mInterpolator;
@@ -18,7 +15,7 @@ public class InterpolatorCloseUpAnimatorConfigurator implements CloseUpAnimatorC
      * {@inheritDoc}
      */
     @Override
-    public void configure(ObjectAnimator animator) {
+    public void configure(ValueAnimator animator) {
         animator.setInterpolator(mInterpolator);
     }
 }

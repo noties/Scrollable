@@ -1,0 +1,37 @@
+apply plugin: 'com.android.application'
+
+android {
+
+    compileSdkVersion TARGET_SDK
+    buildToolsVersion BUILD_TOOLS
+
+    defaultConfig {
+        applicationId "ru.noties.scrollable.sample"
+        minSdkVersion 16
+        targetSdkVersion TARGET_SDK
+        versionCode VERSION_CODE as int
+        versionName VERSION_NAME
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+
+    final def supportVersion = '25.2.0'
+
+    compile "com.android.support:recyclerview-v7:${supportVersion}"
+    compile "com.android.support:support-fragment:${supportVersion}"
+    compile "com.android.support:cardview-v7:${supportVersion}"
+
+    compile 'ru.noties:debug:3.0.0@jar'
+    compile 'ru.noties:ccf:1.0.0'
+    compile 'ru.noties:vt:1.0.0'
+
+    compile project(':library')
+}
