@@ -309,11 +309,13 @@ public class ColorfulActivity extends BaseActivity {
 
     private static class ColorfulOverScrollListener extends ZoomInHeaderOverScrollListener {
 
+        private final SampleHeaderView mHeader;
         private final View mContent;
         private final View mTabs;
 
-        ColorfulOverScrollListener(View header, View content, View tabs) {
+        ColorfulOverScrollListener(SampleHeaderView header, View content, View tabs) {
             super(header, content);
+            mHeader = header;
             mContent = content;
             mTabs = tabs;
         }
@@ -322,6 +324,9 @@ public class ColorfulActivity extends BaseActivity {
         protected void onRatioChanged(ScrollableLayout layout, float ratio) {
             super.onRatioChanged(layout, ratio);
             mTabs.setTranslationY(mContent.getTranslationY());
+            // additionally, we will apply a bit of translationY to header text view
+            // to achieve nice visual effect
+            mHeader.getTextView().setTranslationY(mContent.getTranslationY() / 2.F);
         }
     }
 

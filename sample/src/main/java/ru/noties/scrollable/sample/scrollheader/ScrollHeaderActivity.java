@@ -40,7 +40,7 @@ public class ScrollHeaderActivity extends BaseActivity {
         headerRecyclerView.setAdapter(adapter);
         contentRecyclerView.setAdapter(adapter);
 
-        scrollableLayout.setFriction(.04F);
+        scrollableLayout.setFriction(.035F);
         scrollableLayout.setDraggableView(header);
 
         scrollableLayout.setCanScrollVerticallyDelegate(new CanScrollVerticallyDelegate() {
