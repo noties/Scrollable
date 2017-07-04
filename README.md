@@ -17,7 +17,7 @@ All GIFs here are taken from `sample` application module.
 
 ## Installation
 ```groovy
-compile 'ru.noties:scrollable:1.3.0`
+compile 'ru.noties:scrollable:1.3.0'
 ```
 
 ## Usage
